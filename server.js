@@ -2,11 +2,18 @@ const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2");
 const path = require("path");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true, // Enable cookies and other credentials in CORS requests
+};
+
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 const connection = mysql.createConnection(process.env.DATABASE_URL);
 connection.connect((error) => {
