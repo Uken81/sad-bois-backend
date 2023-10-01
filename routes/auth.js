@@ -29,27 +29,40 @@ router.post("/register", async (req, res) => {
       res.status(500).json({ message: "Server error" });
       return;
     }
-    console.log("length", results.length);
+    // if (results.length > 0) {
+    //   res.json({
+    //     message: "Email already registered.",
+    //     success: false,
+    //     type: "email",
+    //   });
+    //   console.log("duplicate");
+    //   return;
+    // }
+
     if (results.length > 0) {
       res.json({
         message: "Email already registered.",
         success: false,
         type: "email",
       });
-      console.log("return");
-      return;
-    }
-  });
-  console.log("after return");
-  const query =
-    "INSERT INTO users (email, username, password) VALUES (?, ?, ?)";
-
-  connection.query(query, [email, username, passwordHashed], (err, result) => {
-    if (err) {
-      res.status(500).send("Error adding new user");
+      console.log("duplicate");
     } else {
-      console.log("New user added. Insert ID:", result.insertId);
-      res.json({ message: "Data inserted successfully", success: true });
+      console.log("not duplicate");
+      const query =
+        "INSERT INTO users (email, username, password) VALUES (?, ?, ?)";
+
+      connection.query(
+        query,
+        [email, username, passwordHashed],
+        (err, result) => {
+          if (err) {
+            res.status(500).send("Error adding new user");
+          } else {
+            console.log("New user added. Insert ID:", result.insertId);
+            res.json({ message: "Data inserted successfully", success: true });
+          }
+        }
+      );
     }
   });
 });
