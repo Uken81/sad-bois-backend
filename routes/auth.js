@@ -3,13 +3,10 @@ const connection = require("../server");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { validateToken } = require("../Middleware/authMiddleware");
 
 router.post("/register", async (req, res) => {
   const { email, username, password, confirmedPassword } = req.body;
-  // console.log("email ", email);
-  // console.log("username", username);
-  // console.log("password ", password);
-  // console.log("confirmedPassword ", confirmedPassword);
 
   if (password !== confirmedPassword) {
     res.json({
@@ -110,6 +107,26 @@ router.post("/login", async (req, res) => {
         type: "password",
       });
     }
+  });
+});
+
+router.get("/validate", validateToken, async (req, res) => {
+  const details = req.user;
+  console.log("deets", details);
+
+  if (!details) {
+    res.json({
+      details,
+      isValidated: false,
+      message: "Failed to validate user.",
+    });
+    return;
+  }
+
+  res.json({
+    details,
+    isValidated: true,
+    message: "Successfully validated user.",
   });
 });
 
