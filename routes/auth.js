@@ -99,7 +99,7 @@ router.post("/login", async (req, res) => {
         httpOnly: true,
       };
       res.cookie("jwt", token, cookieOptions);
-      res.json({ message: "Login successful", success: true });
+      res.json({ message: "Login successful", success: true, user });
     } else {
       res.json({
         message: "Invalid password",
@@ -128,6 +128,14 @@ router.get("/validate", validateToken, async (req, res) => {
     isValidated: true,
     message: "Successfully validated user.",
   });
+});
+
+router.get("/logout", async (req, res) => {
+  res.cookie("jwt", "logout", {
+    expires: new Date(Date.now() + 2 * 1000),
+    httpOnly: true,
+  });
+  res.json({ message: "User logged out" });
 });
 
 module.exports = router;
