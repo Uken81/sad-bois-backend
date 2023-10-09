@@ -32,6 +32,9 @@ app.use("/auth", authRouter);
 const productsRouter = require("./routes/products");
 app.use("/products", productsRouter);
 
+const newsRouter = require("./routes/news");
+app.use("/news", newsRouter);
+
 app.listen(2001, () => {
   console.log("server running");
 });

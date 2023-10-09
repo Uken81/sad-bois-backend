@@ -38,7 +38,7 @@ router.get("/featured", (req, res) => {
 router.get("/byId", (req, res) => {
   const id = req.query.id;
   console.log("id**: ", id);
-  const query = "SELECT * FROM products WHERE id = ?";
+  const query = "SELECT * FROM products WHERE id = ? LIMIT 1";
 
   connection.query(query, [id], (err, results) => {
     if (err) {
@@ -46,7 +46,7 @@ router.get("/byId", (req, res) => {
       res.status(500).send("Database error");
     } else {
       console.log("selected: ", results);
-      res.json(results);
+      res.json(results[0]);
     }
   });
 });

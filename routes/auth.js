@@ -26,16 +26,18 @@ router.post("/register", async (req, res) => {
       res.status(500).json({ message: "Server error" });
       return;
     }
+    console.log(results);
     // if (results.length > 0) {
+    //   console.log("duplicate");
     //   res.json({
     //     message: "Email already registered.",
     //     success: false,
     //     type: "email",
     //   });
-    //   console.log("duplicate");
     //   return;
     // }
-
+    // console.log("test after");
+    // res.json({ message: "test res" });
     if (results.length > 0) {
       res.json({
         message: "Email already registered.",
@@ -111,21 +113,19 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/validate", validateToken, async (req, res) => {
-  const details = req.user;
+  const user = req.user;
   console.log("deets", details);
 
-  if (!details) {
+  if (!user) {
     res.json({
-      details,
-      isValidated: false,
+      validationSuccess: false,
       message: "Failed to validate user.",
     });
     return;
   }
 
   res.json({
-    details,
-    isValidated: true,
+    validationSuccess: true,
     message: "Successfully validated user.",
   });
 });
