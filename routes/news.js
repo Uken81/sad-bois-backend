@@ -4,7 +4,7 @@ const connection = require("../server");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const query = "SELECT * FROM news";
+  const query = "SELECT * FROM news ORDER BY date DESC;";
 
   connection.query(query, (err, results) => {
     if (err) {
@@ -12,6 +12,7 @@ router.get("/", (req, res) => {
       res.status(500).send("Database error");
     } else {
       res.json(results);
+      console.log("dRes", results);
     }
   });
 });

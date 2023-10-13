@@ -114,7 +114,6 @@ router.post("/login", async (req, res) => {
 
 router.get("/validate", validateToken, async (req, res) => {
   const user = req.user;
-  console.log("deets", details);
 
   if (!user) {
     res.json({
