@@ -7,7 +7,7 @@ require("dotenv").config();
 
 const corsOptions = {
   origin: "http://localhost:5173",
-  credentials: true, // Enable cookies and other credentials in CORS requests
+  credentials: true,
 };
 
 const app = express();
@@ -34,6 +34,9 @@ app.use("/products", productsRouter);
 
 const newsRouter = require("./routes/news");
 app.use("/news", newsRouter);
+
+const tourRouter = require("./routes/tour");
+app.use("/tour", tourRouter);
 
 app.listen(2001, () => {
   console.log("server running");
