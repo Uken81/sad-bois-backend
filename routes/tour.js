@@ -11,7 +11,19 @@ router.get("/", (req, res) => {
       console.error("Error executing query:", err);
       res.status(500).send("Database error");
     } else {
-      console.log("tourres", results);
+      res.json(results);
+    }
+  });
+});
+
+router.get("/latest", (req, res) => {
+  const query = "SELECT * FROM tour ORDER BY date DESC LIMIT 4;";
+
+  connection.query(query, (err, results) => {
+    if (err) {
+      console.error("Error executing query:", err);
+      res.status(500).send("Database error");
+    } else {
       res.json(results);
     }
   });
