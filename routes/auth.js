@@ -102,23 +102,27 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/validate", validateToken, async (req, res) => {
-  const user = req.user;
+  try {
+    const user = req.user;
 
-  if (!user) {
-    res.json({
-      validationSuccess: false,
-      message: "Failed to validate user.",
+    if (!user) {
+      res
+        .status(401)
+        .json({ validationSuccess: false, message: "Not authorized" });
+      return;
+    }
+
+    res.status(200).json({
+      validationSuccess: true,
+      message: "Successfully validated user.",
     });
-    return;
+  } catch (error) {
+    console.error("Error in /validate route:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-
-  res.json({
-    validationSuccess: true,
-    message: "Successfully validated user.",
-  });
 });
 
-router.get("/logout", async (req, res) => {
+router.get("/logout", (req, res) => {
   res.cookie("jwt", "logout", {
     expires: new Date(Date.now() + 2 * 1000),
     httpOnly: true,
