@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2019", // Set the JavaScript version for compiled files. ES2019 is a good target for Node.js environments
+    "module": "commonjs", // Use CommonJS, as it's the standard in Node.js
+    "lib": ["es2019"], // Include only necessary libraries; 'dom' is not needed for a Node.js backend
+    "outDir": "./dist", // Output directory for compiled files
+    "rootDir": "./src", // Root directory of your TypeScript files
+    "strict": true, // Enable all strict type-checking options
+    "types": ["node"],
+    "esModuleInterop": true, // Ensures compatibility with CommonJS modules
+    "skipLibCheck": true, // Skip type checking of all declaration files (*.d.ts)
+    "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file references
+    "resolveJsonModule": true, // If you need to import JSON files directly
+    "moduleResolution": "node" // Specify module resolution strategy: 'node' for Node.js
+  },
+  "include": [
+    "src/**/*.ts", // Include all TypeScript files in src directory
+    "src/server.ts"
+  ],
+  "exclude": [
+    "node_modules", // Exclude the node_modules directory
+    "**/*.spec.ts", // Exclude test files
+    "dist"
+  ]
+}
