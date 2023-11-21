@@ -11,11 +11,13 @@
     "skipLibCheck": true, // Skip type checking of all declaration files (*.d.ts)
     "forceConsistentCasingInFileNames": true, // Ensure consistent casing in file references
     "resolveJsonModule": true, // If you need to import JSON files directly
-    "moduleResolution": "node" // Specify module resolution strategy: 'node' for Node.js
+    "moduleResolution": "node", // Specify module resolution strategy: 'node' for Node.js
+    "typeRoots": ["./node_modules/@types", "./src/Types"]
   },
   "include": [
     "src/**/*.ts", // Include all TypeScript files in src directory
-    "src/server.ts"
+    "src/server.ts",
+    "expressTypes.d.ts"
   ],
   "exclude": [
     "node_modules", // Exclude the node_modules directory

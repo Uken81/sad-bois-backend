@@ -1,14 +1,15 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-// import { validateToken } from "../middlewares/authMiddleware";
-import connection from '../server';
+import { validateToken } from '../middlewares/authMiddleware';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { checkConnection } from '../Utils/checkConnection';
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+router.post('/register', async (req: Request, res: Response) => {
   console.log('req', req.body);
+  const connection = checkConnection(req.dbConnection);
 
   const { email, username, password, confirmedPassword } = req.body;
 
@@ -25,8 +26,7 @@ router.post('/register', async (req, res) => {
     return;
   }
 
-  const passwordHashed = await bcrypt.hash(password, 10);
-
+  // const dbConnection = checkConnection(connection);
   const duplicteQuery = 'SELECT email FROM users WHERE email = ?';
   connection.query(duplicteQuery, [email], async (err, results) => {
     if (err) {
@@ -35,14 +35,7 @@ router.post('/register', async (req, res) => {
       return;
     }
     console.log(results);
-    // if (results.length > 0) {
-    //   res.json({
-    //     message: "Email already registered.",
-    //     success: false,
-    //     type: "email",
-    //   });
-    //   console.log("duplicate");
-    // } else {
+
     const rows = results as RowDataPacket[];
     if (rows.length > 0) {
       res.status(400).json({
@@ -53,8 +46,8 @@ router.post('/register', async (req, res) => {
       return;
     }
 
+    const passwordHashed = await bcrypt.hash(password, 10);
     const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
-
     connection.query(query, [email, username, passwordHashed], (err, result: ResultSetHeader) => {
       if (err) {
         res.status(500).send('Error adding new user');
@@ -66,23 +59,19 @@ router.post('/register', async (req, res) => {
   });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', async (req: Request, res: Response) => {
+  const connection = checkConnection(req.dbConnection);
+
   const { email, password } = req.body;
   console.log('creds', email, password);
 
   const query = 'SELECT id, username, email, password FROM users WHERE email = ?';
-
   connection.query(query, [email], async (err, results) => {
     if (err) {
       console.error('Error querying the database:', err);
       res.status(500).json({ message: 'Server error' });
       return;
     }
-
-    // if (results.length === 0) {
-    //   res.json({ message: "Invalid email", success: false, type: "email" });
-    //   return;
-    // }
 
     const rows = results as RowDataPacket[];
     if (rows.length === 0) {
@@ -130,28 +119,26 @@ router.post('/login', async (req, res) => {
   });
 });
 
-// router.get("/validate", validateToken, async (req: Request, res: Response) => {
+// router.get('/validate', validateToken, async (req: Request, res: Response) => {
 //   try {
 //     const user = req.user;
 
 //     if (!user) {
-//       res
-//         .status(401)
-//         .json({ validationSuccess: false, message: "Not authorized" });
+//       res.status(401).json({ validationSuccess: false, message: 'Not authorized' });
 //       return;
 //     }
 
 //     res.status(200).json({
 //       validationSuccess: true,
-//       message: "Successfully validated user.",
+//       message: 'Successfully validated user.'
 //     });
 //   } catch (error) {
-//     console.error("Error in /validate route:", error);
-//     res.status(500).json({ message: "Internal Server Error" });
+//     console.error('Error in /validate route:', error);
+//     res.status(500).json({ message: 'Internal Server Error' });
 //   }
 // });
 
-router.get('/logout', (req, res) => {
+router.get('/logout', (req: Request, res: Response) => {
   res.cookie('jwt', 'logout', {
     expires: new Date(Date.now() + 2 * 1000),
     httpOnly: true
@@ -159,5 +146,4 @@ router.get('/logout', (req, res) => {
   res.json({ message: 'User logged out' });
 });
 
-// module.exports = router;
 export default router;

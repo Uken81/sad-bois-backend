@@ -1,18 +1,21 @@
-import express, { json, urlencoded } from "express";
-import cors from "cors";
-import { createConnection } from "mysql2";
-import cookieParser from "cookie-parser";
-import { config } from "dotenv";
-import authRouter from "./routes/auth";
-import productsRouter from "./routes/products";
-import newsRouter from "./routes/news";
-import tourRouter from "./routes/tour";
+import express, { json, urlencoded } from 'express';
+import cors from 'cors';
+import { Connection, createConnection } from 'mysql2';
+import cookieParser from 'cookie-parser';
+import { config } from 'dotenv';
+import authRouter from './routes/auth';
+import productsRouter from './routes/products';
+import newsRouter from './routes/news';
+import tourRouter from './routes/tour';
+import { promisify } from 'util';
+import { checkConnection } from './Utils/checkConnection';
 
 config();
 
+let connectionReady = false;
 const corsOptions = {
-  origin: "http://localhost:5173",
-  credentials: true,
+  origin: 'http://localhost:5173',
+  credentials: true
 };
 
 const app = express();
@@ -22,39 +25,59 @@ app.use(cookieParser());
 //Allows x-www-form-urlencoded data from Postman to be parsed
 app.use(urlencoded({ extended: true }));
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  console.log("about to throw");
-  throw new Error("DATABASE_URL is not set in the environment variables");
-}
+let connection: Connection | null = null;
 
-const connection = createConnection(databaseUrl);
+const initialiseDatabase = async () => {
+  try {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL is not set in the environment variables');
+    }
 
-// try {
+    const databaseConnection: Connection = createConnection(databaseUrl);
+    const connectAsync = promisify(databaseConnection.connect).bind(databaseConnection);
 
-// } catch (error) {
-
-// }
-connection.connect((error) => {
-  if (error) {
-    console.error("err", error);
-  } else {
-    console.log("MYSQL connected....");
+    await connectAsync();
+    console.log('MYSQL connected....');
+    return databaseConnection;
+  } catch (error) {
+    console.error('Error initialising database:', error);
+    return null;
+    //Todo: Maybe do a retry process. Research how to implement an exit process so backend doesnt crash.
   }
-});
+};
 
-//should i create a try/catch here?
+const startServer = async () => {
+  try {
+    const dbConnection = await initialiseDatabase();
+    connection = checkConnection(dbConnection);
+    // console.log('ok', connection);
+    connectionReady = true;
 
-app.use("/auth", authRouter);
+    app.use('/auth', authRouter);
+    app.use('/products', productsRouter);
+    app.use('/news', newsRouter);
+    app.use('/tour', tourRouter);
 
-app.use("/products", productsRouter);
+    app.listen(2001, () => {
+      console.log('server running');
+    });
 
-app.use("/news", newsRouter);
+    // return connection;
+  } catch (error) {
+    console.error('Failed to start the server:', error);
+    process.exit(1);
+  }
+};
 
-app.use("/tour", tourRouter);
+startServer();
 
-app.listen(2001, () => {
-  console.log("server running");
-});
-
+export const waitForConnection = async () => {
+  while (!connectionReady) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  console.log('serverConnection');
+  return connection;
+};
+//delete this when other comps updated!!
 export default connection;
