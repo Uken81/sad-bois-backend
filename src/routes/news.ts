@@ -16,8 +16,8 @@ const isEmptyResults = (results: RowDataPacket[]) => {
 
 router.get('/', (req: Request, res: Response) => {
   const connection = checkConnection(req.dbConnection);
-  const query = 'SELECT * FROM news ORDER BY date DESC;';
 
+  const query = 'SELECT * FROM news ORDER BY date DESC;';
   connection.query(query, (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
@@ -34,28 +34,23 @@ router.get('/', (req: Request, res: Response) => {
       });
     }
 
-    res.json(results);
+    res.status(200).json(results);
   });
 });
 
-router.get('/latest', (req, res) => {
+router.get('/latest', (req: Request, res: Response) => {
   const connection = checkConnection(req.dbConnection);
-  const query = 'SELECT * FROM news ORDER BY date DESC LIMIT 3;';
 
+  const query = 'SELECT * FROM news ORDER BY date DESC LIMIT 3;';
   connection.query(query, (err: QueryError, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
-      res.status(500).json({
-        error: 'Datbase error occured',
-        details: err.message,
-        fatalError: err.fatal
-      });
+      return res.status(500).json({ error: 'Internal server error' });
     }
 
     if (isEmptyResults(results)) {
-      return res.status(404).json({
-        error: 'No news found'
-      });
+      console.error('Error: failed to find news');
+      return res.status(404).json({ error: 'News not found' });
     }
 
     res.json(results);
@@ -64,6 +59,7 @@ router.get('/latest', (req, res) => {
 
 router.get('/byId', (req, res) => {
   const connection = checkConnection(req.dbConnection);
+
   const id = req.query.id;
 
   if (!id) {
@@ -85,7 +81,7 @@ router.get('/byId', (req, res) => {
 
     if (isEmptyResults(results)) {
       return res.status(404).json({
-        error: 'No news with that id found'
+        error: 'No article with that id found'
       });
     }
 

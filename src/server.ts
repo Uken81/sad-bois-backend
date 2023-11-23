@@ -1,4 +1,4 @@
-import express, { json, urlencoded } from 'express';
+import express, { Response, json, urlencoded } from 'express';
 import cors from 'cors';
 import { Connection, createConnection } from 'mysql2';
 import cookieParser from 'cookie-parser';
@@ -8,11 +8,12 @@ import productsRouter from './routes/products';
 import newsRouter from './routes/news';
 import tourRouter from './routes/tour';
 import { promisify } from 'util';
-import { checkConnection } from './Utils/checkConnection';
 
 config();
 
+let connection: Connection | null = null;
 let connectionReady = false;
+
 const corsOptions = {
   origin: 'http://localhost:5173',
   credentials: true
@@ -25,9 +26,9 @@ app.use(cookieParser());
 //Allows x-www-form-urlencoded data from Postman to be parsed
 app.use(urlencoded({ extended: true }));
 
-let connection: Connection | null = null;
-
 const initialiseDatabase = async () => {
+  console.log('*****Initialising database*****');
+
   try {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
@@ -48,10 +49,15 @@ const initialiseDatabase = async () => {
 };
 
 const startServer = async () => {
+  console.log('*****starting server*****');
+
   try {
     const dbConnection = await initialiseDatabase();
-    connection = checkConnection(dbConnection);
-    // console.log('ok', connection);
+    if (!dbConnection) {
+      throw new Error('Error initialising database');
+    }
+
+    connection = dbConnection;
     connectionReady = true;
 
     app.use('/auth', authRouter);
@@ -59,23 +65,31 @@ const startServer = async () => {
     app.use('/news', newsRouter);
     app.use('/tour', tourRouter);
 
+    // app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    //   if (!err) {
+    //     return next();
+    // }
+    //   console.log(err);
+    //   res.status(500).json({ error: `Internal server error: ${err}` });
+    // })
+
     app.listen(2001, () => {
       console.log('server running');
     });
-
-    // return connection;
   } catch (error) {
     console.error('Failed to start the server:', error);
-    process.exit(1);
   }
 };
 
 startServer();
 
 export const waitForConnection = async () => {
+  let count = 0;
   while (!connectionReady) {
     await new Promise((resolve) => setTimeout(resolve, 100));
+    count = count++;
   }
+  console.log('count', count);
   console.log('serverConnection');
   return connection;
 };

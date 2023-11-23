@@ -4,8 +4,10 @@ import jwt from 'jsonwebtoken';
 import { validateToken } from '../middlewares/authMiddleware';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { checkConnection } from '../Utils/checkConnection';
+import { attachConnection } from '../middlewares/attachConnection';
 
 const router = express.Router();
+router.use(attachConnection);
 
 router.post('/register', async (req: Request, res: Response) => {
   console.log('req', req.body);
@@ -26,7 +28,6 @@ router.post('/register', async (req: Request, res: Response) => {
     return;
   }
 
-  // const dbConnection = checkConnection(connection);
   const duplicteQuery = 'SELECT email FROM users WHERE email = ?';
   connection.query(duplicteQuery, [email], async (err, results) => {
     if (err) {

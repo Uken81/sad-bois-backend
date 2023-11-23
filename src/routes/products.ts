@@ -1,8 +1,10 @@
 import express, { Response, Request } from 'express';
 import { QueryError, RowDataPacket } from 'mysql2';
 import { checkConnection } from '../Utils/checkConnection';
+import { attachConnection } from '../middlewares/attachConnection';
 
 const router = express.Router();
+router.use(attachConnection);
 
 router.get('/', (req: Request, res: Response) => {
   const connection = checkConnection(req.dbConnection);
