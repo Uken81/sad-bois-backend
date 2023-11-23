@@ -84,14 +84,9 @@ const startServer = async () => {
 startServer();
 
 export const waitForConnection = async () => {
-  let count = 0;
   while (!connectionReady) {
     await new Promise((resolve) => setTimeout(resolve, 100));
-    count = count++;
   }
-  console.log('count', count);
-  console.log('serverConnection');
+
   return connection;
 };
-//delete this when other comps updated!!
-export default connection;
