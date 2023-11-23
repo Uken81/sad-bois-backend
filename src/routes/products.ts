@@ -33,7 +33,7 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/featured', (req: Request, res: Response) => {
   const connection = checkConnection(req.dbConnection);
 
-  const query = 'SELECT * FROM products WHERE isFeatured = 1';
+  const query = 'SELECT * FROM product WHERE isFeatured = 1';
   connection.query(query, (err: QueryError, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
