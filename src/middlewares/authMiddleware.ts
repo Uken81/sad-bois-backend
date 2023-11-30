@@ -1,42 +1,63 @@
-import express, { Response, Request, NextFunction } from 'express';
-import { QueryError, RowDataPacket } from 'mysql2';
+import { Response, Request, NextFunction } from 'express';
+import { RowDataPacket } from 'mysql2';
 import jwt from 'jsonwebtoken';
-import { promisify } from 'util';
 import { checkConnection } from '../Utils/checkConnection';
 
+interface DecodedToken {
+  id: number;
+  iat: number;
+  exp: number;
+}
+
 export const validateToken = async (req: Request, res: Response, next: NextFunction) => {
-  console.log('cookies', req.cookies);
-  const databaseUrl = process.env.DATABASE_URL;
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET is not correctly set in the environment variables');
+  }
 
-  if (req.cookies.jwt) {
-    const connection = checkConnection(req.dbConnection);
-    const decoded = await promisify(jwt.verify)(req.cookies.jwt, databaseUrl);
-    console.log('decoded', decoded);
+  const verifyToken = (token: string, secret: jwt.Secret): Promise<DecodedToken> => {
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, secret, (err: Error | null, decoded: any) => {
+        if (err) {
+          console.error('Error verifying token', err);
+          reject(new Error(err.message));
+        }
+
+        if (!decoded) {
+          reject(new Error('Token is null or not decoded properly'));
+        }
+
+        resolve(decoded as DecodedToken);
+      });
+    });
+  };
+
+  try {
+    const decoded = await verifyToken(req.cookies.jwt, jwtSecret);
+
     const query = 'SELECT * FROM users WHERE id = ?';
-  //   connection.query(query, [decoded.id], async (err: QueryError | null, res: RowDataPacket[]) => {
-  //     if (err) {
-  //       console.error('Error querying the database:', err);
-  //       res.status(500).json({ message: 'Server error' });
-  //       return;
-  //     }
-  //     console.log('resy', res);
-  //     if (!res) {
-  //       console.log('no user found');
-  //       return next();
-  //     }
+    const connection = checkConnection(req.dbConnection);
+    connection.query(query, [decoded.id], async (err: Error | null, results: RowDataPacket[]) => {
+      if (err) {
+        console.error('Error querying the database:', err);
+        res.status(500).json({ message: 'Server error', type: 'network' });
+        return;
+      }
 
-  //     function setUser() {
-  //       if (res.length > 1) {
-  //         throw new Error('Multiple users with same id found');
-  //       }
+      if (!results || results.length === 0) {
+        console.error('No user found');
+        return res.status(404).json('No user with that ID found');
+      }
 
-  //       return res[0];
-  //     }
-  //     req.user = setUser();
-  //     console.log('requser', req.user);
-  //     return next();
-  //   });
-  // } else {
-  //   next();
-  // }
+      if (results.length > 1) {
+        return res.status(500).json('Multiple users with same id found');
+      }
+
+      req.isUserValidated = true;
+      next();
+    });
+  } catch (error) {
+    console.error('error', error);
+    return res.status(401).json({ message: 'Invalid token' });
+  }
 };

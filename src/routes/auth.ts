@@ -2,9 +2,11 @@ import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { validateToken } from '../middlewares/authMiddleware';
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { QueryError, ResultSetHeader, RowDataPacket } from 'mysql2';
 import { checkConnection } from '../Utils/checkConnection';
 import { attachConnection } from '../middlewares/attachConnection';
+import { isResultEmpty } from '../Utils/isResultEmpty';
+import { UserType } from '../Types/expressTypes';
 
 const router = express.Router();
 router.use(attachConnection);
@@ -20,73 +22,109 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 
   if (password !== confirmedPassword) {
-    res.status(400).json({
+    return res.status(400).json({
       message: 'Passwords do not match.',
-      success: false,
       type: 'password'
     });
-    return;
   }
 
   const duplicteQuery = 'SELECT email FROM users WHERE email = ?';
-  connection.query(duplicteQuery, [email], async (err, results) => {
-    if (err) {
-      console.error('Error querying the database:', err);
-      res.status(500).json({ message: 'Server error' });
-      return;
-    }
-    console.log(results);
-
-    const rows = results as RowDataPacket[];
-    if (rows.length > 0) {
-      res.status(400).json({
-        message: 'Email already registered',
-        success: false,
-        type: 'email'
-      });
-      return;
-    }
-
-    const passwordHashed = await bcrypt.hash(password, 10);
-    const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
-    connection.query(query, [email, username, passwordHashed], (err, result: ResultSetHeader) => {
+  connection.query(
+    duplicteQuery,
+    [email],
+    async (err: QueryError | null, results: RowDataPacket[]) => {
       if (err) {
-        res.status(500).send('Error adding new user');
-      } else {
-        console.log('New user added. Insert ID:', result.insertId);
-        res.json({ message: 'Data inserted successfully', success: true });
+        console.error('Error querying the database:', err);
+        return res.status(500).json({
+          error: 'Database error occured',
+          type: 'network',
+          details: err.message,
+          fatalError: err.fatal
+        });
       }
-    });
-  });
+      console.log(results);
+
+      if (isResultEmpty(results)) {
+        return res.status(400).json({
+          message: 'Email already registered',
+          type: 'duplicateEmail'
+        });
+      }
+
+      const passwordHashed = await bcrypt.hash(password, 10);
+      const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
+      connection.query(
+        query,
+        [email, username, passwordHashed],
+        (err: QueryError | null, result: ResultSetHeader) => {
+          if (err) {
+            console.error('Error querying the database:', err);
+            return res.status(500).json({
+              error: 'Database error occured',
+              type: 'network',
+              details: err.message,
+              fatalError: err.fatal
+            });
+          }
+
+          console.log('New user added. Insert ID:', result.insertId);
+          return res.status(200).json({ message: 'Data inserted successfully' });
+        }
+      );
+    }
+  );
 });
 
 router.post('/login', async (req: Request, res: Response) => {
   const connection = checkConnection(req.dbConnection);
+  const jwtSecret = process.env.JWT_SECRET;
+  const cookieExpireTime = Number(process.env.JWT_COOKIE_EXPIRES);
+
+  if (!jwtSecret) {
+    console.error('JWT_SECRET is not correctly set in the environment variables');
+    return res.status(500).json({
+      message: 'Database error occured',
+      type: 'network'
+    });
+  }
+
+  if (isNaN(cookieExpireTime)) {
+    console.error('JWT_COOKIE_EXPIRES is not set correctly in the environment variables');
+    return res.status(500).json({
+      message: 'Database error occured',
+      type: 'network'
+    });
+  }
 
   const { email, password } = req.body;
   console.log('creds', email, password);
 
   const query = 'SELECT id, username, email, password FROM users WHERE email = ?';
-  connection.query(query, [email], async (err, results) => {
+  connection.query(query, [email], async (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error querying the database:', err);
-      res.status(500).json({ message: 'Server error' });
-      return;
+      return res.status(500).json({ message: 'Server error', type: 'network' });
     }
 
-    const rows = results as RowDataPacket[];
-    if (rows.length === 0) {
-      res.status(400).json({ message: 'Invalid email', success: false, type: 'email' });
-      return;
+    if (isResultEmpty(results)) {
+      return res.status(400).json({ message: 'Invalid email', type: 'email' });
     }
+    console.log('results', results);
 
-    const user = rows[0];
-    console.log('user: ', user);
+    const row = results[0];
+    const user: UserType = {
+      id: row.id,
+      email: row.email,
+      username: row.username,
+      password: row.password
+    };
+
     const passwordMatch = await bcrypt.compare(password, user.password);
-
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET is not set in the environment variables');
+    if (!passwordMatch) {
+      return res.status(401).json({
+        message: 'Invalid password',
+        type: 'password'
+      });
     }
 
     if (passwordMatch) {
@@ -96,55 +134,44 @@ router.post('/login', async (req: Request, res: Response) => {
       //throw error in else??
       console.log('token', token);
 
-      const cookieExpireTime = Number(process.env.JWT_COOKIE_EXPIRES);
-      if (!jwtSecret) {
-        throw new Error('JWT_COOKIE_EXPIRES_IN is not set in the environment variables');
-      }
-      if (isNaN(cookieExpireTime)) {
-        throw new Error('JWT_COOKIE_EXPIRES is not set correctly in the environment variables');
-      }
-
       const cookieOptions = {
         expires: new Date(Date.now() + cookieExpireTime * 24 * 60 * 60 * 1000),
         httpOnly: true
       };
       res.cookie('jwt', token, cookieOptions);
-      res.json({ message: 'Login successful', success: true, user });
-    } else {
-      res.json({
-        message: 'Invalid password',
-        success: false,
-        type: 'password'
+      return res.status(200).json({
+        message: 'Login successful',
+        user: { username: user.username, email: user.email }
       });
     }
   });
 });
 
-// router.get('/validate', validateToken, async (req: Request, res: Response) => {
-//   try {
-//     const user = req.user;
+router.get('/validate', validateToken, async (req: Request, res: Response) => {
+  const isValidated = req.isUserValidated;
 
-//     if (!user) {
-//       res.status(401).json({ validationSuccess: false, message: 'Not authorized' });
-//       return;
-//     }
+  if (!isValidated) {
+    return res.status(401).json({ validationSuccess: false, message: 'Not authorized' });
+  }
 
-//     res.status(200).json({
-//       validationSuccess: true,
-//       message: 'Successfully validated user.'
-//     });
-//   } catch (error) {
-//     console.error('Error in /validate route:', error);
-//     res.status(500).json({ message: 'Internal Server Error' });
-//   }
-// });
+  return res.status(200).json({
+    validationSuccess: true,
+    message: 'Successfully validated user.'
+  });
+});
 
 router.get('/logout', (req: Request, res: Response) => {
-  res.cookie('jwt', 'logout', {
-    expires: new Date(Date.now() + 2 * 1000),
-    httpOnly: true
-  });
-  res.json({ message: 'User logged out' });
+  try {
+    res.cookie('jwt', 'logout', {
+      expires: new Date(Date.now() + 2 * 1000),
+      httpOnly: true
+    });
+
+    return res.status(200).json({ message: 'User logged out' });
+  } catch (error) {
+    console.error('Logout Error:', error);
+    return res.status(500).json({ message: 'Error logging out' });
+  }
 });
 
 export default router;
