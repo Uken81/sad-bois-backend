@@ -1,4 +1,5 @@
 import { Connection } from 'mysql2';
+
 export interface UserType {
   id: number;
   email: string;

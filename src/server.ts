@@ -7,6 +7,7 @@ import authRouter from './routes/auth';
 import productsRouter from './routes/products';
 import newsRouter from './routes/news';
 import tourRouter from './routes/tour';
+import processPaymentRouter from './routes/process-payment';
 import { promisify } from 'util';
 
 config();
@@ -64,6 +65,7 @@ const startServer = async () => {
     app.use('/products', productsRouter);
     app.use('/news', newsRouter);
     app.use('/tour', tourRouter);
+    app.use('/process-payment', processPaymentRouter);
 
     // app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     //   if (!err) {
@@ -87,6 +89,6 @@ export const waitForConnection = async () => {
   while (!connectionReady) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-
+  //TODO: Set Rejection after a certain number of tries
   return connection;
 };
