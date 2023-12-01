@@ -1,42 +1,74 @@
 import express, { Request, Response } from 'express';
 import { attachConnection } from '../middlewares/attachConnection';
-import { validateCreditCardNumber } from '../Utils/CardValidation/validateCreditCardNumber';
-import { validateExpirationDate } from '../Utils/CardValidation/validateExpirationDate';
-import { validateSecurityCode } from '../Utils/CardValidation/validateSecurityCode';
-import { validateNameOnCard } from '../Utils/CardValidation/validateNameOnCard';
+import { validateCardDetails } from '../Utils/CardValidation/validateCardDetails';
+import { checkConnection } from '../Utils/checkConnection';
+import { QueryError } from 'mysql2';
 
 const router = express.Router();
 router.use(attachConnection);
 
 router.post('/', (req: Request, res: Response) => {
-  console.log('test');
-  const { cardNumber, nameOnCard, expirationDate, securityCode } = req.body;
-
+  console.log('test', req.body.customer);
+  const connection = checkConnection(req.dbConnection);
+  const cardDetails = req.body.formValues;
   let isCardValid = false;
 
-  if (!cardNumber || !nameOnCard || !expirationDate || !securityCode) {
-    return res.status(400).json({ success: false, message: 'Missing form data' });
+  const validationResults = validateCardDetails(cardDetails);
+  if (!validationResults.success) {
+    return res
+      .status(400)
+      .json({ type: validationResults.type, message: validationResults.message });
+  } else {
+    isCardValid = true;
   }
-
-  if (!validateCreditCardNumber(cardNumber)) {
-    return res.status(400).json({ type: 'cardNumber', message: 'Invalid card number' });
-  }
-  if (!validateExpirationDate(expirationDate)) {
-    return res.status(400).json({ type: 'cardExpiration', message: 'Invalid expiration date' });
-  }
-  if (!validateSecurityCode(securityCode)) {
-    return res.status(400).json({ type: 'cardSecurityCode', message: 'Invalid security code' });
-  }
-  if (!validateNameOnCard(nameOnCard)) {
-    return res.status(400).json({ type: 'nameOnCard', message: 'Invalid name on card' });
-  }
-
-  isCardValid = true;
 
   if (isCardValid) {
-    return res.status(200).json({ success: true, message: 'Payment processed successfully' });
+    const {
+      email,
+      emailoffers,
+      country,
+      firstname,
+      lastname,
+      address,
+      apartment,
+      suburb,
+      state,
+      postcode
+    } = req.body.customer;
+
+    const query =
+      'INSERT INTO customers (email, emailoffers, country, firstname, lastname, address, apartment, suburb, state, postcode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+    connection.query(
+      query,
+      [
+        email,
+        emailoffers,
+        country,
+        firstname,
+        lastname,
+        address,
+        apartment,
+        suburb,
+        state,
+        postcode
+      ],
+      (err: QueryError | null) => {
+        if (err) {
+          return res.status(500).json({
+            error: 'Database error occured',
+            type: 'network',
+            details: err.message,
+            fatalError: err.fatal
+          });
+        }
+
+        console.log(`New User ${email} added`);
+      }
+    );
+    return res.status(200).json({ message: 'Payment processed successfully' });
   } else {
-    return res.status(400).json({ success: false, message: 'Invalid payment details' });
+    return res.status(400).json({ message: 'Invalid payment details' });
   }
 });
 
