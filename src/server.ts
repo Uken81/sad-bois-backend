@@ -7,7 +7,8 @@ import authRouter from './routes/auth';
 import productsRouter from './routes/products';
 import newsRouter from './routes/news';
 import tourRouter from './routes/tour';
-import processPaymentRouter from './routes/process-payment';
+import processOrderRouter from './routes/process-order';
+import ordersRouter from './routes/orders';
 import { promisify } from 'util';
 
 config();
@@ -65,7 +66,8 @@ const startServer = async () => {
     app.use('/products', productsRouter);
     app.use('/news', newsRouter);
     app.use('/tour', tourRouter);
-    app.use('/process-payment', processPaymentRouter);
+    app.use('/process-order', processOrderRouter);
+    app.use('/orders', ordersRouter);
 
     // app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     //   if (!err) {

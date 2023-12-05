@@ -50,6 +50,7 @@ export interface OrderType {
   customerEmail: string;
   shippingDetails: string;
   orderedProducts: string;
+  dateOrdered: Date;
   trackingId: string;
   shippingType: string;
   totalCost: string;

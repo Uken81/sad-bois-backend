@@ -75,14 +75,20 @@ router.post('/', (req: Request, res: Response) => {
       const customerOrder = createOrder(orderData, orderTotal);
       console.log('orderTotal with shipping', orderTotal);
       console.log('customerOrder', customerOrder);
-      const { customerEmail, shippingDetails, orderedProducts, shippingType, totalCost } =
-        customerOrder;
+      const {
+        customerEmail,
+        shippingDetails,
+        orderedProducts,
+        dateOrdered,
+        shippingType,
+        totalCost
+      } = customerOrder;
       const customerOrderQuery =
-        'INSERT INTO customer_order (customerEmail, shippingDetails, orderedProducts, shippingType, totalCost) VALUES (?, ?, ?, ?, ?)';
+        'INSERT INTO customer_order (customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost) VALUES (?, ?, ?, ?, ?, ?)';
 
       connection.query(
         customerOrderQuery,
-        [customerEmail, shippingDetails, orderedProducts, shippingType, totalCost],
+        [customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost],
         (err: QueryError | null) => {
           if (err) {
             console.error(err);
