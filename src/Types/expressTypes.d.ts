@@ -12,5 +12,6 @@ declare module 'express-serve-static-core' {
     dbConnection: Connection | null;
     user?: UserType;
     isUserValidated?: boolean;
+    isExistingCustomer?: boolean;
   }
 }

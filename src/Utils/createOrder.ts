@@ -1,10 +1,9 @@
-import { format } from 'date-fns';
 import { OrderDataType, OrderType } from '../Types/checkoutTypes';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createOrder = (orderData: OrderDataType, orderTotal: string): OrderType => {
   const { email, country, firstname, lastname, address, apartment, suburb, state, postcode } =
-    orderData.customerData;
+    orderData.customer;
   const { type } = orderData.shippingData;
   const shippingDetails = `Name: ${firstname} ${lastname}. Address: ${country} ${apartment}, ${address}, ${suburb}, ${state}, ${postcode}`;
 
@@ -19,15 +18,15 @@ export const createOrder = (orderData: OrderDataType, orderTotal: string): Order
     return stringifiedList;
   };
   const orderedProducts = createOrderedProducts();
-  const trackingId = uuidv4();
+  const orderId = uuidv4();
   const today = new Date();
 
   const order: OrderType = {
+    orderId,
     customerEmail: email,
     shippingDetails,
     orderedProducts,
     dateOrdered: today,
-    trackingId,
     shippingType: type,
     totalCost: orderTotal
   };

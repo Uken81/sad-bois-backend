@@ -11,7 +11,7 @@ router.get('/', (req: Request, res: Response) => {
   const connection = checkConnection(req.dbConnection);
 
   const email = req.query.email;
-  const query = 'SELECT * FROM customer_order WHERE customerEmail = ? ORDER BY dateOrdered DESC';
+  const query = 'SELECT * FROM shop_orders WHERE customerEmail = ? ORDER BY dateOrdered DESC';
   connection.query(query, [email], (err: QueryError | null, results: RowDataPacket[]) => {
     console.log('ordersresults', results);
     if (err) {

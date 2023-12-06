@@ -37,7 +37,7 @@ export interface TotalCalculationDataType {
 }
 
 export interface OrderDataType extends TotalCalculationDataType {
-  customerData: CustomerType;
+  customer: CustomerType;
 }
 
 export interface CartSummaryTYpe {
@@ -47,11 +47,11 @@ export interface CartSummaryTYpe {
 }
 
 export interface OrderType {
+  orderId: string;
   customerEmail: string;
   shippingDetails: string;
   orderedProducts: string;
   dateOrdered: Date;
-  trackingId: string;
   shippingType: string;
   totalCost: string;
 }
