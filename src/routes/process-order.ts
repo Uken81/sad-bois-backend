@@ -6,7 +6,7 @@ import { QueryError } from 'mysql2';
 import { calculateOrderTotal } from '../Utils/calculateOrderTotal';
 import { OrderDataType, TotalCalculationDataType } from '../Types/checkoutTypes';
 import { createOrder } from '../Utils/createOrder';
-import { checkIfCustomerExists } from '../middlewares/CheckIfCustomerExists';
+import { checkIfCustomerExists } from '../middlewares/checkIfCustomerExists';
 
 const router = express.Router();
 router.use(attachConnection);

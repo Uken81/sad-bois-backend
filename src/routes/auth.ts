@@ -99,7 +99,7 @@ router.post('/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
   console.log('creds', email, password);
 
-  const query = 'SELECT id, username, email, password FROM users WHERE email = ?';
+  const query = 'SELECT username, email, password FROM users WHERE email = ?';
   connection.query(query, [email], async (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error querying the database:', err);
@@ -113,7 +113,6 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const row = results[0];
     const user: UserType = {
-      id: row.id,
       email: row.email,
       username: row.username,
       password: row.password
@@ -128,11 +127,9 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     if (passwordMatch) {
-      const token = jwt.sign({ id: user.id }, jwtSecret, {
+      const token = jwt.sign({ email: user.email }, jwtSecret, {
         expiresIn: process.env.JWT_EXPIRES_IN
       });
-      //throw error in else??
-      console.log('token', token);
 
       const cookieOptions = {
         expires: new Date(Date.now() + cookieExpireTime * 24 * 60 * 60 * 1000),
