@@ -42,9 +42,8 @@ router.post('/register', async (req: Request, res: Response) => {
           fatalError: err.fatal
         });
       }
-      console.log(results);
 
-      if (isResultEmpty(results)) {
+      if (results.length > 0) {
         return res.status(400).json({
           message: 'Email already registered',
           type: 'duplicateEmail'
