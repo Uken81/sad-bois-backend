@@ -58,7 +58,6 @@ router.get('/byId', (req, res) => {
   const connection = checkConnection(req.dbConnection);
 
   const id = req.query.id;
-
   if (!id) {
     return res.status(400).json({
       error: 'No ID provided'

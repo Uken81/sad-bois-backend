@@ -77,7 +77,14 @@ const startServer = async () => {
     //   res.status(500).json({ error: `Internal server error: ${err}` });
     // })
 
-    app.listen(2001, () => {
+    // app.listen(2001, () => {
+    //   console.log('server running');
+    // });
+    let port = process.env.PORT;
+    if (port == null || port == '') {
+      port = '2001';
+    }
+    app.listen(port, () => {
       console.log('server running');
     });
   } catch (error) {
