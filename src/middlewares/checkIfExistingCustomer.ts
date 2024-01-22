@@ -3,7 +3,7 @@ import { QueryError, RowDataPacket } from 'mysql2';
 import { isResultEmpty } from '../Utils/isResultEmpty';
 import { connection } from '../server';
 
-export const checkIfCustomerExists = async (req: Request, res: Response, next: NextFunction) => {
+export const checkIfExistingCustomer = async (req: Request, res: Response, next: NextFunction) => {
   const email = req.body.customer?.email;
   if (!email) {
     console.error('Email value must be provided in customer check');

@@ -5,11 +5,11 @@ import { calculateOrderTotal } from '../Utils/calculateOrderTotal';
 import { OrderDataType, TotalCalculationDataType } from '../Types/checkoutTypes';
 import { createOrder } from '../Utils/createOrder';
 import { connection } from '../server';
-import { checkIfCustomerExists } from '../middlewares/checkIfCustomerExists';
+import { checkIfExistingCustomer } from '../middlewares/checkIfExistingCustomer';
 
 const router = express.Router();
 
-router.post('/', checkIfCustomerExists, async (req: Request, res: Response) => {
+router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) => {
   const cardDetails = req.body.formValues;
   const customer = req.body.customer;
   const cart = req.body.cart;
