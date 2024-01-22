@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
 import { RowDataPacket } from 'mysql2';
 import jwt from 'jsonwebtoken';
-import { checkConnection } from '../Utils/checkConnection';
+import { connection } from '../server';
 
 interface DecodedToken {
   email: string;
@@ -37,8 +37,7 @@ export const validateToken = async (req: Request, res: Response, next: NextFunct
     console.log('decoded', decoded);
 
     const query = 'SELECT * FROM users WHERE email = ?';
-    const connection = checkConnection(req.dbConnection);
-    connection.query(
+    connection?.query(
       query,
       [decoded.email],
       async (err: Error | null, results: RowDataPacket[]) => {

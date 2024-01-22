@@ -1,18 +1,15 @@
 import express, { Request, Response } from 'express';
-import { attachConnection } from '../middlewares/attachConnection';
 import { validateCardDetails } from '../Utils/CardValidation/validateCardDetails';
-import { checkConnection } from '../Utils/checkConnection';
 import { QueryError } from 'mysql2';
 import { calculateOrderTotal } from '../Utils/calculateOrderTotal';
 import { OrderDataType, TotalCalculationDataType } from '../Types/checkoutTypes';
 import { createOrder } from '../Utils/createOrder';
 import { checkIfCustomerExists } from '../middlewares/checkIfCustomerExists';
+import { connection } from '../server';
 
 const router = express.Router();
-router.use(attachConnection);
 
 router.post('/', checkIfCustomerExists, async (req: Request, res: Response) => {
-  const connection = checkConnection(req.dbConnection);
   const cardDetails = req.body.formValues;
   const customer = req.body.customer;
   const cart = req.body.cart;
@@ -62,7 +59,7 @@ router.post('/', checkIfCustomerExists, async (req: Request, res: Response) => {
   }
 
   if (!isExistingCustomer) {
-    connection.query(
+    connection?.query(
       customerQuery,
       [
         email,
@@ -97,7 +94,7 @@ router.post('/', checkIfCustomerExists, async (req: Request, res: Response) => {
     shippingData
   };
 
-  const orderTotal = await calculateOrderTotal(totalCalculationData, connection);
+  const orderTotal = await calculateOrderTotal(totalCalculationData);
 
   const orderData: OrderDataType = {
     customer,
@@ -120,7 +117,7 @@ router.post('/', checkIfCustomerExists, async (req: Request, res: Response) => {
   const customerOrderQuery =
     'INSERT INTO shop_orders (orderId, customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
-  connection.query(
+  connection?.query(
     customerOrderQuery,
     [
       orderId,

@@ -1,17 +1,13 @@
 import express, { Response, Request } from 'express';
 import { QueryError, RowDataPacket } from 'mysql2';
-import { attachConnection } from '../middlewares/attachConnection';
-import { checkConnection } from '../Utils/checkConnection';
 import { isResultEmpty } from '../Utils/isResultEmpty';
+import { connection } from '../server';
 
 const router = express.Router();
-router.use(attachConnection);
 
 router.get('/', (req: Request, res: Response) => {
-  const connection = checkConnection(req.dbConnection);
-
   const query = 'SELECT * FROM news ORDER BY date DESC;';
-  connection.query(query, (err: QueryError | null, results: RowDataPacket[]) => {
+  connection?.query(query, (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -32,10 +28,8 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 router.get('/latest', (req: Request, res: Response) => {
-  const connection = checkConnection(req.dbConnection);
-
   const query = 'SELECT * FROM news ORDER BY date DESC LIMIT 3;';
-  connection.query(query, (err: QueryError, results: RowDataPacket[]) => {
+  connection?.query(query, (err: QueryError, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -55,8 +49,6 @@ router.get('/latest', (req: Request, res: Response) => {
 });
 
 router.get('/byId', (req, res) => {
-  const connection = checkConnection(req.dbConnection);
-
   const id = req.query.id;
   if (!id) {
     return res.status(400).json({
@@ -65,7 +57,7 @@ router.get('/byId', (req, res) => {
   }
 
   const query = 'SELECT * FROM news WHERE id = ? LIMIT 1';
-  connection.query(query, [id], (err: QueryError | null, results: RowDataPacket[]) => {
+  connection?.query(query, [id], (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({

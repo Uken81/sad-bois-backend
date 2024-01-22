@@ -3,18 +3,13 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { validateToken } from '../middlewares/authMiddleware';
 import { QueryError, ResultSetHeader, RowDataPacket } from 'mysql2';
-import { checkConnection } from '../Utils/checkConnection';
-import { attachConnection } from '../middlewares/attachConnection';
 import { isResultEmpty } from '../Utils/isResultEmpty';
 import { UserType } from '../Types/expressTypes';
+import { connection } from '../server';
 
 const router = express.Router();
-router.use(attachConnection);
 
 router.post('/register', async (req: Request, res: Response) => {
-  console.log('req', req.body);
-  const connection = checkConnection(req.dbConnection);
-
   const { email, username, password, confirmedPassword } = req.body;
 
   if (!email || !username || !password || !confirmedPassword) {
@@ -29,7 +24,7 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 
   const duplicteQuery = 'SELECT email FROM users WHERE email = ?';
-  connection.query(
+  connection?.query(
     duplicteQuery,
     [email],
     async (err: QueryError | null, results: RowDataPacket[]) => {
@@ -52,7 +47,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
       const passwordHashed = await bcrypt.hash(password, 10);
       const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
-      connection.query(
+      connection?.query(
         query,
         [email, username, passwordHashed],
         (err: QueryError | null, result: ResultSetHeader) => {
@@ -75,7 +70,6 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 router.post('/login', async (req: Request, res: Response) => {
-  const connection = checkConnection(req.dbConnection);
   const jwtSecret = process.env.JWT_SECRET;
   const cookieExpireTime = Number(process.env.JWT_COOKIE_EXPIRES);
 
@@ -99,7 +93,7 @@ router.post('/login', async (req: Request, res: Response) => {
   console.log('creds', email, password);
 
   const query = 'SELECT username, email, password FROM users WHERE email = ?';
-  connection.query(query, [email], async (err: QueryError | null, results: RowDataPacket[]) => {
+  connection?.query(query, [email], async (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error querying the database:', err);
       return res.status(500).json({ message: 'Server error', type: 'network' });

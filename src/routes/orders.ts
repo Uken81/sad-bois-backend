@@ -1,19 +1,14 @@
 import express, { Request, Response } from 'express';
-import { attachConnection } from '../middlewares/attachConnection';
 import { QueryError, RowDataPacket } from 'mysql2';
-import { checkConnection } from '../Utils/checkConnection';
 import { isResultEmpty } from '../Utils/isResultEmpty';
+import { connection } from '../server';
 
 const router = express.Router();
-router.use(attachConnection);
 
 router.get('/', (req: Request, res: Response) => {
-  const connection = checkConnection(req.dbConnection);
-
   const email = req.query.email;
   const query = 'SELECT * FROM shop_orders WHERE customerEmail = ? ORDER BY dateOrdered DESC';
-  connection.query(query, [email], (err: QueryError | null, results: RowDataPacket[]) => {
-    console.log('ordersresults', results);
+  connection?.query(query, [email], (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({

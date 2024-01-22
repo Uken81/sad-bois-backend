@@ -1,10 +1,9 @@
 import { Response, Request, NextFunction } from 'express';
 import { QueryError, RowDataPacket } from 'mysql2';
-import { checkConnection } from '../Utils/checkConnection';
 import { isResultEmpty } from '../Utils/isResultEmpty';
+import { connection } from '../server';
 
 export const checkIfCustomerExists = async (req: Request, res: Response, next: NextFunction) => {
-  const connection = checkConnection(req.dbConnection);
   const email = req.body.customer?.email;
   if (!email) {
     console.error('Email value must be provided in customer check');
@@ -20,7 +19,7 @@ export const checkIfCustomerExists = async (req: Request, res: Response, next: N
                 ELSE 'false'
             END as conditionMet;`;
 
-  connection.query(query, [email], (err: QueryError | null, results: RowDataPacket[]) => {
+  connection?.query(query, [email], (err: QueryError | null, results: RowDataPacket[]) => {
     if (err) {
       console.error('Error executing query: ', err);
       return res.status(500).json({

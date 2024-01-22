@@ -1,20 +1,18 @@
-import express, { Response, json, urlencoded } from 'express';
+import express, { json, urlencoded } from 'express';
 import cors from 'cors';
-import { Connection, createConnection } from 'mysql2';
+import { createConnection } from 'mysql2';
 import cookieParser from 'cookie-parser';
 import { config } from 'dotenv';
 import authRouter from './routes/auth';
 import productsRouter from './routes/products';
 import newsRouter from './routes/news';
+import { Connection } from 'mysql2/typings/mysql/lib/Connection';
+import { promisify } from 'util';
 import tourRouter from './routes/tour';
 import processOrderRouter from './routes/process-order';
 import ordersRouter from './routes/orders';
-import { promisify } from 'util';
 
 config();
-
-let connection: Connection | null = null;
-let connectionReady = false;
 
 const corsOptions = {
   origin: 'http://localhost:5173',
@@ -50,6 +48,7 @@ const initialiseDatabase = async () => {
   }
 };
 
+export let connection: Connection | null = null;
 const startServer = async () => {
   console.log('*****starting server*****');
 
@@ -60,7 +59,6 @@ const startServer = async () => {
     }
 
     connection = dbConnection;
-    connectionReady = true;
 
     app.use('/auth', authRouter);
     app.use('/products', productsRouter);
@@ -77,9 +75,6 @@ const startServer = async () => {
     //   res.status(500).json({ error: `Internal server error: ${err}` });
     // })
 
-    // app.listen(2001, () => {
-    //   console.log('server running');
-    // });
     let port = process.env.PORT;
     if (port == null || port == '') {
       port = '2001';
@@ -93,11 +88,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-export const waitForConnection = async () => {
-  while (!connectionReady) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  //TODO: Set Rejection after a certain number of tries
-  return connection;
-};

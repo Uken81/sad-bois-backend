@@ -1,10 +1,8 @@
-import { Connection, QueryError, RowDataPacket } from 'mysql2';
+import { QueryError, RowDataPacket } from 'mysql2';
 import { TotalCalculationDataType } from '../Types/checkoutTypes';
+import { connection } from '../server';
 
-export const calculateOrderTotal = async (
-  data: TotalCalculationDataType,
-  connection: Connection
-) => {
+export const calculateOrderTotal = async (data: TotalCalculationDataType) => {
   const { items } = data.cart;
   const { shippingPrice } = data.shippingData;
 
@@ -16,7 +14,7 @@ export const calculateOrderTotal = async (
 
     try {
       const [productOrder]: RowDataPacket[] = await new Promise((resolve, reject) => {
-        connection.query(query, [id], (err: QueryError | null, results: RowDataPacket[]) => {
+        connection?.query(query, [id], (err: QueryError | null, results: RowDataPacket[]) => {
           if (err) {
             reject(err);
           } else {
