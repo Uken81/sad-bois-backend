@@ -9,7 +9,12 @@
     "build": "tsc",
     "lint": "eslint ."
   },
-  "keywords": [],
+  "keywords": [
+    "heroku"
+  ],
+  "engines": {
+    "node": "20.x"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
