@@ -1,19 +1,18 @@
 import express, { Response, Request } from 'express';
-import { QueryError, RowDataPacket } from 'mysql2';
 import { isResultEmpty } from '../Utils/isResultEmpty';
-import { connection } from '../server';
+import { pool } from '../server';
+import { QueryResultRow } from 'pg';
 
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const query = 'SELECT * FROM news ORDER BY date DESC;';
-  connection?.query(query, (err: QueryError | null, results: RowDataPacket[]) => {
+  pool?.query(query, (err: Error | null, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 
@@ -29,13 +28,12 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/latest', (req: Request, res: Response) => {
   const query = 'SELECT * FROM news ORDER BY date DESC LIMIT 3;';
-  connection?.query(query, (err: QueryError, results: RowDataPacket[]) => {
+  pool?.query(query, (err: Error, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 
@@ -57,13 +55,12 @@ router.get('/byId', (req, res) => {
   }
 
   const query = 'SELECT * FROM news WHERE id = ? LIMIT 1';
-  connection?.query(query, [id], (err: QueryError | null, results: RowDataPacket[]) => {
+  pool?.query(query, [id], (err: Error | null, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 

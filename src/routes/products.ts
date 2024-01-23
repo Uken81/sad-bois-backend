@@ -1,19 +1,18 @@
 import express, { Response, Request } from 'express';
-import { QueryError, RowDataPacket } from 'mysql2';
 import { isResultEmpty } from '../Utils/isResultEmpty';
-import { connection } from '../server';
+import { pool } from '../server';
+import { QueryResultRow } from 'pg';
 
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const query = 'SELECT * FROM products';
-  connection?.query(query, (err: QueryError, results: RowDataPacket[]) => {
+  pool?.query(query, (err: Error, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 
@@ -28,13 +27,12 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/featured', (req: Request, res: Response) => {
   const query = 'SELECT * FROM products WHERE isFeatured = 1';
-  connection?.query(query, (err: QueryError, results: RowDataPacket[]) => {
+  pool?.query(query, (err: Error, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 
@@ -50,13 +48,12 @@ router.get('/featured', (req: Request, res: Response) => {
 router.get('/byId', (req: Request, res: Response) => {
   const id = req.query.id;
   const query = 'SELECT * FROM products WHERE id = ? LIMIT 1';
-  connection?.query(query, [id], (err: QueryError | null, results: RowDataPacket[]) => {
+  pool?.query(query, [id], (err: Error | null, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 

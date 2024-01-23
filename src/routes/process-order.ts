@@ -1,11 +1,10 @@
 import express, { Request, Response } from 'express';
 import { validateCardDetails } from '../Utils/CardValidation/validateCardDetails';
-import { QueryError } from 'mysql2';
 import { calculateOrderTotal } from '../Utils/calculateOrderTotal';
 import { OrderDataType, TotalCalculationDataType } from '../Types/checkoutTypes';
 import { createOrder } from '../Utils/createOrder';
-import { connection } from '../server';
 import { checkIfExistingCustomer } from '../middlewares/checkIfExistingCustomer';
+import { pool } from '../server';
 
 const router = express.Router();
 
@@ -59,7 +58,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   }
 
   if (!isExistingCustomer) {
-    connection?.query(
+    pool?.query(
       customerQuery,
       [
         email,
@@ -73,14 +72,13 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
         state,
         postcode
       ],
-      async (err: QueryError | null) => {
+      async (err: Error | null) => {
         if (err) {
           console.error(err);
           return res.status(500).json({
             error: 'Database error occured',
             type: 'network',
-            details: err.message,
-            fatalError: err.fatal
+            details: err.message
           });
         }
 
@@ -117,7 +115,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   const customerOrderQuery =
     'INSERT INTO shop_orders (orderId, customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
-  connection?.query(
+  pool?.query(
     customerOrderQuery,
     [
       orderId,
@@ -128,14 +126,13 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
       shippingType,
       totalCost
     ],
-    (err: QueryError | null) => {
+    (err: Error | null) => {
       if (err) {
         console.error(err);
         return res.status(500).json({
           error: 'Database error occured',
           type: 'network',
-          details: err.message,
-          fatalError: err.fatal
+          details: err.message
         });
       }
 

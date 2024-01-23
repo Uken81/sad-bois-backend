@@ -1,6 +1,6 @@
-import { RowDataPacket } from 'mysql2';
+import { QueryResultRow } from 'pg';
 
-export const isResultEmpty = (results: RowDataPacket[]) => {
+export const isResultEmpty = (results: QueryResultRow) => {
   if (!results) {
     console.error('Can not determine length of empty results.');
     return;

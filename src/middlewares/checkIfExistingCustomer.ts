@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
-import { QueryError, RowDataPacket } from 'mysql2';
 import { isResultEmpty } from '../Utils/isResultEmpty';
-import { connection } from '../server';
+import { pool } from '../server';
+import { QueryResultRow } from 'pg';
 
 export const checkIfExistingCustomer = async (req: Request, res: Response, next: NextFunction) => {
   const email = req.body.customer?.email;
@@ -19,13 +19,12 @@ export const checkIfExistingCustomer = async (req: Request, res: Response, next:
                 ELSE 'false'
             END as conditionMet;`;
 
-  connection?.query(query, [email], (err: QueryError | null, results: RowDataPacket[]) => {
+  pool?.query(query, [email], (err: Error | null, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       return res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 

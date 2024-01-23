@@ -1,6 +1,6 @@
-import { QueryError, RowDataPacket } from 'mysql2';
 import { TotalCalculationDataType } from '../Types/checkoutTypes';
-import { connection } from '../server';
+import { pool } from '../server';
+import { QueryResultRow } from 'pg';
 
 export const calculateOrderTotal = async (data: TotalCalculationDataType) => {
   const { items } = data.cart;
@@ -13,12 +13,12 @@ export const calculateOrderTotal = async (data: TotalCalculationDataType) => {
     const query = 'SELECT * FROM products WHERE id = ?';
 
     try {
-      const [productOrder]: RowDataPacket[] = await new Promise((resolve, reject) => {
-        connection?.query(query, [id], (err: QueryError | null, results: RowDataPacket[]) => {
+      const [productOrder]: QueryResultRow[] = await new Promise((resolve, reject) => {
+        pool?.query(query, [id], (err: Error | null, results: QueryResultRow) => {
           if (err) {
             reject(err);
           } else {
-            resolve(results);
+            resolve(results.rows);
           }
         });
       });

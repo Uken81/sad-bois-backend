@@ -1,20 +1,19 @@
 import express, { Request, Response } from 'express';
-import { QueryError, RowDataPacket } from 'mysql2';
 import { isResultEmpty } from '../Utils/isResultEmpty';
-import { connection } from '../server';
+import { pool } from '../server';
+import { QueryResultRow } from 'pg';
 
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const email = req.query.email;
   const query = 'SELECT * FROM shop_orders WHERE customerEmail = ? ORDER BY dateOrdered DESC';
-  connection?.query(query, [email], (err: QueryError | null, results: RowDataPacket[]) => {
+  pool?.query(query, [email], (err: Error | null, results: QueryResultRow) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
         error: 'Database error occured',
-        details: err.message,
-        fatalError: err.fatal
+        details: err.message
       });
     }
 
