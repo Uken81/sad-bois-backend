@@ -54,7 +54,7 @@ router.get('/byId', (req, res) => {
     });
   }
 
-  const query = 'SELECT * FROM news WHERE id = ? LIMIT 1';
+  const query = 'SELECT * FROM news WHERE id = $1 LIMIT 1';
   pool?.query(query, [id], (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
@@ -69,8 +69,8 @@ router.get('/byId', (req, res) => {
         error: 'No article with that id found'
       });
     }
-
-    res.status(200).json(results.rows[0]);
+    console.log('artRes', results.rows);
+    res.status(200).json(results.rows);
   });
 });
 
