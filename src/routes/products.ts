@@ -1,13 +1,13 @@
 import express, { Response, Request } from 'express';
 import { isResultEmpty } from '../Utils/isResultEmpty';
 import { pool } from '../server';
-import { QueryResultRow } from 'pg';
+import { QueryResult } from 'pg';
 
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const query = 'SELECT * FROM products';
-  pool?.query(query, (err: Error, results: QueryResultRow) => {
+  pool?.query(query, (err: Error, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -16,18 +16,18 @@ router.get('/', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results)) {
+    if (isResultEmpty(results.rows)) {
       console.error('Error: failed to find products');
       return res.status(500).json({ error: 'Products not found' });
     }
 
-    res.status(200).json(results);
+    res.status(200).json(results.rows);
   });
 });
 
 router.get('/featured', (req: Request, res: Response) => {
   const query = 'SELECT * FROM products WHERE isFeatured = 1';
-  pool?.query(query, (err: Error, results: QueryResultRow) => {
+  pool?.query(query, (err: Error, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -36,19 +36,19 @@ router.get('/featured', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results)) {
+    if (isResultEmpty(results.rows)) {
       console.error('Error: failed to find featured products');
       return res.status(500).json({ error: 'Featured products not found' });
     }
 
-    res.status(200).json(results);
+    res.status(200).json(results.rows);
   });
 });
 
 router.get('/byId', (req: Request, res: Response) => {
   const id = req.query.id;
-  const query = 'SELECT * FROM products WHERE id = ? LIMIT 1';
-  pool?.query(query, [id], (err: Error | null, results: QueryResultRow) => {
+  const query = 'SELECT * FROM products WHERE id = $1 LIMIT 1';
+  pool?.query(query, [id], (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -57,12 +57,12 @@ router.get('/byId', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results)) {
+    if (isResultEmpty(results.rows)) {
       console.error('Error: failed to find selected product');
       return res.status(500).json({ error: 'No product with that id found' });
     }
 
-    res.status(200).json(results[0]);
+    res.status(200).json(results.rows[0]);
   });
 });
 

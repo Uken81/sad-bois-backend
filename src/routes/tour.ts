@@ -1,6 +1,7 @@
 import express, { Response, Request } from 'express';
 import { pool } from '../server';
 import { QueryResult } from 'pg';
+import { isResultEmpty } from '../Utils/isResultEmpty';
 
 const router = express.Router();
 
@@ -12,6 +13,12 @@ router.get('/', (req: Request, res: Response) => {
       res.status(500).json({
         error: 'Database error occured',
         details: err.message
+      });
+    }
+
+    if (isResultEmpty(results.rows)) {
+      return res.status(404).json({
+        error: 'No shows found'
       });
     }
 

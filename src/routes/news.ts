@@ -16,7 +16,7 @@ router.get('/', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results)) {
+    if (isResultEmpty(results.rows)) {
       return res.status(404).json({
         error: 'No news found'
       });
@@ -37,7 +37,7 @@ router.get('/latest', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results)) {
+    if (isResultEmpty(results.rows)) {
       console.error('Error: failed to find news');
       return res.status(404).json({ error: 'Latest news not found' });
     }
@@ -64,12 +64,12 @@ router.get('/byId', (req, res) => {
       });
     }
 
-    if (isResultEmpty(results)) {
+    if (isResultEmpty(results.rows)) {
       return res.status(404).json({
         error: 'No article with that id found'
       });
     }
-    console.log('artRes', results.rows);
+
     res.status(200).json(results.rows);
   });
 });

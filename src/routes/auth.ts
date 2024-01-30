@@ -5,7 +5,7 @@ import { validateToken } from '../middlewares/authMiddleware';
 import { isResultEmpty } from '../Utils/isResultEmpty';
 import { UserType } from '../Types/expressTypes';
 import { pool } from '../server';
-import { QueryResultRow } from 'pg';
+import { QueryResult } from 'pg';
 
 const router = express.Router();
 
@@ -23,8 +23,8 @@ router.post('/register', async (req: Request, res: Response) => {
     });
   }
 
-  const duplicteQuery = 'SELECT email FROM users WHERE email = ?';
-  pool?.query(duplicteQuery, [email], async (err: Error | null, results: QueryResultRow) => {
+  const duplicteQuery = 'SELECT email FROM users WHERE email = $1';
+  pool?.query(duplicteQuery, [email], async (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error querying the database:', err);
       return res.status(500).json({
@@ -34,7 +34,7 @@ router.post('/register', async (req: Request, res: Response) => {
       });
     }
 
-    if (results.length > 0) {
+    if (results.rows.length > 0) {
       return res.status(400).json({
         message: 'Email already registered',
         type: 'duplicateEmail'
@@ -42,24 +42,19 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     const passwordHashed = await bcrypt.hash(password, 10);
-    const query = 'INSERT INTO users (email, username, password) VALUES (?, ?, ?)';
-    pool?.query(
-      query,
-      [email, username, passwordHashed],
-      (err: Error | null, result: QueryResultRow) => {
-        if (err) {
-          console.error('Error querying the database:', err);
-          return res.status(500).json({
-            error: 'Database error occured',
-            type: 'network',
-            details: err.message
-          });
-        }
-
-        console.log('New user added. Insert ID:', result.insertId);
-        return res.status(200).json({ message: 'Data inserted successfully' });
+    const query = 'INSERT INTO users (email, username, password) VALUES ($1, $2, $3)';
+    pool?.query(query, [email, username, passwordHashed], (err: Error | null) => {
+      if (err) {
+        console.error('Error querying the database:', err);
+        return res.status(500).json({
+          error: 'Database error occured',
+          type: 'network',
+          details: err.message
+        });
       }
-    );
+
+      return res.status(200).json({ message: 'Data inserted successfully' });
+    });
   });
 });
 
@@ -84,10 +79,9 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 
   const { email, password } = req.body;
-  console.log('creds', email, password);
 
-  const query = 'SELECT username, email, password FROM users WHERE email = ?';
-  pool?.query(query, [email], async (err: Error | null, results: QueryResultRow) => {
+  const query = 'SELECT username, email, password FROM users WHERE email = $1';
+  pool?.query(query, [email], async (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error querying the database:', err);
       return res.status(500).json({ message: 'Server error', type: 'network' });
@@ -96,9 +90,8 @@ router.post('/login', async (req: Request, res: Response) => {
     if (isResultEmpty(results)) {
       return res.status(400).json({ message: 'Invalid email', type: 'email' });
     }
-    console.log('results', results);
 
-    const row = results[0];
+    const row = results.rows[0];
     const user: UserType = {
       email: row.email,
       username: row.username,

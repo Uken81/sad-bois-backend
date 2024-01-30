@@ -48,7 +48,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   } = customer;
 
   const customerQuery =
-    'INSERT INTO customers (email, emailoffers, country, firstname, lastname, address, apartment, suburb, state, postcode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    'INSERT INTO customers (email, emailoffers, country, firstname, lastname, address, apartment, suburb, state, postcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
   const isExistingCustomer: boolean | undefined = req.isExistingCustomer;
   if (isExistingCustomer === undefined) {
     return res.status(500).json({
@@ -113,7 +113,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
     totalCost
   } = customerOrder;
   const customerOrderQuery =
-    'INSERT INTO shop_orders (orderId, customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    'INSERT INTO shop_orders (orderId, customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost) VALUES ($1, $2, $3, $4, $5, $6, $7)';
 
   pool?.query(
     customerOrderQuery,
