@@ -1,13 +1,13 @@
 import express, { Response, Request } from 'express';
 import { isResultEmpty } from '../Utils/isResultEmpty';
 import { pool } from '../server';
-import { QueryResultRow } from 'pg';
+import { QueryResult } from 'pg';
 
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const query = 'SELECT * FROM news ORDER BY date DESC;';
-  pool?.query(query, (err: Error | null, results: QueryResultRow) => {
+  pool?.query(query, (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -22,13 +22,13 @@ router.get('/', (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json(results);
+    res.status(200).json(results.rows);
   });
 });
 
 router.get('/latest', (req: Request, res: Response) => {
   const query = 'SELECT * FROM news ORDER BY date DESC LIMIT 3;';
-  pool?.query(query, (err: Error, results: QueryResultRow) => {
+  pool?.query(query, (err: Error, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -42,7 +42,7 @@ router.get('/latest', (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Latest news not found' });
     }
     //add error if array !==3??
-    res.status(200).json(results);
+    res.status(200).json(results.rows);
   });
 });
 
@@ -55,7 +55,7 @@ router.get('/byId', (req, res) => {
   }
 
   const query = 'SELECT * FROM news WHERE id = ? LIMIT 1';
-  pool?.query(query, [id], (err: Error | null, results: QueryResultRow) => {
+  pool?.query(query, [id], (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -70,7 +70,7 @@ router.get('/byId', (req, res) => {
       });
     }
 
-    res.status(200).json(results[0]);
+    res.status(200).json(results.rows[0]);
   });
 });
 
