@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const email = req.query.email;
-  const query = 'SELECT * FROM shop_orders WHERE customerEmail = $1 ORDER BY dateOrdered DESC';
+  const query = 'SELECT * FROM orders WHERE customerEmail = $1 ORDER BY dateOrdered DESC';
   pool?.query(query, [email], (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);

@@ -113,7 +113,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
     totalCost
   } = customerOrder;
   const customerOrderQuery =
-    'INSERT INTO shop_orders (orderId, customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost) VALUES ($1, $2, $3, $4, $5, $6, $7)';
+    'INSERT INTO orders (orderId, customerEmail, shippingDetails, orderedProducts, dateOrdered, shippingType, totalCost) VALUES ($1, $2, $3, $4, $5, $6, $7)';
 
   pool?.query(
     customerOrderQuery,
