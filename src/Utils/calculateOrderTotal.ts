@@ -1,6 +1,6 @@
 import { TotalCalculationDataType } from '../Types/checkoutTypes';
 import { pool } from '../server';
-import { QueryResultRow } from 'pg';
+import { QueryResult, QueryResultRow } from 'pg';
 
 export const calculateOrderTotal = async (data: TotalCalculationDataType) => {
   const { items } = data.cart;
@@ -10,11 +10,11 @@ export const calculateOrderTotal = async (data: TotalCalculationDataType) => {
   for (const item of items) {
     const id = item.productId;
     const quantity = item.quantity;
-    const query = 'SELECT * FROM products WHERE id = ?';
+    const query = 'SELECT * FROM products WHERE id = $1';
 
     try {
       const [productOrder]: QueryResultRow[] = await new Promise((resolve, reject) => {
-        pool?.query(query, [id], (err: Error | null, results: QueryResultRow) => {
+        pool?.query(query, [id], (err: Error | null, results: QueryResult) => {
           if (err) {
             reject(err);
           } else {

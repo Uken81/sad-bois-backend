@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
 import { isResultEmpty } from '../Utils/isResultEmpty';
 import { pool } from '../server';
-import { QueryResultRow } from 'pg';
+import { QueryResult } from 'pg';
 
 export const checkIfExistingCustomer = async (req: Request, res: Response, next: NextFunction) => {
   const email = req.body.customer?.email;
@@ -14,12 +14,12 @@ export const checkIfExistingCustomer = async (req: Request, res: Response, next:
                 WHEN EXISTS (
                     SELECT 1
                     FROM customers
-                    WHERE email = ?
+                    WHERE email = $1
                 ) THEN 'true'
                 ELSE 'false'
             END as conditionMet;`;
 
-  pool?.query(query, [email], (err: Error | null, results: QueryResultRow) => {
+  pool?.query(query, [email], (err: Error | null, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       return res.status(500).json({
@@ -34,7 +34,7 @@ export const checkIfExistingCustomer = async (req: Request, res: Response, next:
       });
     }
 
-    const row = results[0];
+    const row = results.rows[0];
     req.isExistingCustomer = row.conditionMet;
     next();
   });
