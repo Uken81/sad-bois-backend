@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../server';
-import { QueryResultRow } from 'pg';
+import { QueryResult } from 'pg';
 
 interface DecodedToken {
   email: string;
@@ -36,20 +36,20 @@ export const validateToken = async (req: Request, res: Response, next: NextFunct
     const decoded = await verifyToken(req.cookies.jwt, jwtSecret);
     console.log('decoded', decoded);
 
-    const query = 'SELECT * FROM users WHERE email = ?';
-    pool?.query(query, [decoded.email], async (err: Error | null, results: QueryResultRow) => {
+    const query = 'SELECT * FROM users WHERE email = $1';
+    pool?.query(query, [decoded.email], async (err: Error | null, results: QueryResult) => {
       if (err) {
         console.error('Error querying the database:', err);
         res.status(500).json({ message: 'Server error', type: 'network' });
         return;
       }
 
-      if (!results || results.length === 0) {
+      if (!results || results.rows.length === 0) {
         console.error('No user found');
         return res.status(404).json('No user with that ID found');
       }
 
-      if (results.length > 1) {
+      if (results.rows.length > 1) {
         return res.status(500).json('Multiple users with same id found');
       }
 
