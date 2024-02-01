@@ -35,9 +35,7 @@ export const checkIfExistingCustomer = async (req: Request, res: Response, next:
     }
 
     const row = results.rows[0];
-    console.log('row', row);
-    req.isExistingCustomer = row.conditionMet;
-    console.log('isExCus', row.conditionMet);
+    req.isExistingCustomer = row.conditionmet;
     next();
   });
 };
