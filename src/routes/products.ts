@@ -26,7 +26,7 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 router.get('/featured', (req: Request, res: Response) => {
-  const query = 'SELECT * FROM products WHERE isFeatured = true';
+  const query = 'SELECT * FROM products WHERE is_Featured = true';
   pool?.query(query, (err: Error, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
