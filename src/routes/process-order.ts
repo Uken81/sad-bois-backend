@@ -36,10 +36,10 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
 
   const {
     email,
-    emailoffers,
+    emailOffers,
     country,
-    firstname,
-    lastname,
+    firstName,
+    lastName,
     address,
     apartment,
     suburb,
@@ -48,7 +48,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   } = customer;
 
   const customerQuery =
-    'INSERT INTO customers (email, emailoffers, country, firstname, lastname, address, apartment, suburb, state, postcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
+    'INSERT INTO customers (email, emailOffers, country, firstName, lastName, address, apartment, suburb, state, postcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
   const isExistingCustomer: boolean | undefined = req.isExistingCustomer;
   if (isExistingCustomer === undefined) {
     return res.status(500).json({
@@ -62,10 +62,10 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
       customerQuery,
       [
         email,
-        emailoffers,
+        emailOffers,
         country,
-        firstname,
-        lastname,
+        firstName,
+        lastName,
         address,
         apartment,
         suburb,
