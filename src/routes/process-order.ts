@@ -11,6 +11,7 @@ const router = express.Router();
 router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) => {
   const cardDetails = req.body.formValues;
   const customer = req.body.customer;
+  console.log('customer', customer);
   const cart = req.body.cart;
   const shippingData = req.body.selectedShipping;
 
@@ -50,6 +51,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   const customerQuery =
     'INSERT INTO customers (email, email_offers, country, first_name, last_name, address, apartment, suburb, state, postcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
   const isExistingCustomer: boolean | undefined = req.isExistingCustomer;
+  console.log('isExistingCustomer', isExistingCustomer, 'IEC type', typeof isExistingCustomer);
   if (isExistingCustomer === undefined) {
     return res.status(500).json({
       error: 'Internal Server Error',
@@ -58,6 +60,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   }
 
   if (!isExistingCustomer) {
+    console.log('running query');
     pool?.query(
       customerQuery,
       [

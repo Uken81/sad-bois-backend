@@ -10,14 +10,7 @@ export const checkIfExistingCustomer = async (req: Request, res: Response, next:
     return res.status(400).json({ error: 'Email required' });
   }
 
-  const query = `SELECT CASE 
-                WHEN EXISTS (
-                    SELECT 1
-                    FROM customers
-                    WHERE email = $1
-                ) THEN 'true'
-                ELSE 'false'
-            END as conditionMet;`;
+  const query = 'SELECT EXISTS (SELECT 1 FROM customers WHERE email = $1) AS conditionMet;';
 
   pool?.query(query, [email], (err: Error | null, results: QueryResult) => {
     if (err) {
