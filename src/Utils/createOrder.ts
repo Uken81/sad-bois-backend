@@ -2,10 +2,10 @@ import { OrderDataType, OrderType } from '../Types/checkoutTypes';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createOrder = (orderData: OrderDataType, orderTotal: string): OrderType => {
-  const { email, country, firstname, lastname, address, apartment, suburb, state, postcode } =
+  const { email, country, firstName, lastName, address, apartment, suburb, state, postcode } =
     orderData.customer;
   const { type } = orderData.shippingData;
-  const shippingDetails = `Name: ${firstname} ${lastname}. Address: ${country} ${apartment}, ${address}, ${suburb}, ${state}, ${postcode}`;
+  const shippingDetails = `Name: ${firstName} ${lastName}. Address: ${country} ${apartment}, ${address}, ${suburb}, ${state}, ${postcode}`;
 
   const createOrderedProducts = () => {
     const cartItems = orderData.cart.items;
