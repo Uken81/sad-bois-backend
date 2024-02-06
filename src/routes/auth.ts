@@ -7,6 +7,13 @@ import { UserType } from '../Types/expressTypes';
 import { pool } from '../server';
 import { QueryResult } from 'pg';
 
+interface cOptions {
+  expires: Date;
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: 'none' | 'lax' | 'strict';
+}
+
 const router = express.Router();
 
 router.post('/register', async (req: Request, res: Response) => {
@@ -111,9 +118,11 @@ router.post('/login', async (req: Request, res: Response) => {
         expiresIn: process.env.JWT_EXPIRES_IN
       });
 
-      const cookieOptions = {
+      const cookieOptions: cOptions = {
         expires: new Date(Date.now() + cookieExpireTime * 24 * 60 * 60 * 1000),
-        httpOnly: true
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
       };
       res.cookie('jwt', token, cookieOptions);
       return res.status(200).json({
@@ -141,7 +150,9 @@ router.get('/logout', (req: Request, res: Response) => {
   try {
     res.cookie('jwt', 'logout', {
       expires: new Date(Date.now() + 2 * 1000),
-      httpOnly: true
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none'
     });
 
     return res.status(200).json({ message: 'User logged out' });
