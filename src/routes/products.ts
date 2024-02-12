@@ -6,8 +6,16 @@ import { QueryResult } from 'pg';
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
-  const query = 'SELECT * FROM products';
-  pool?.query(query, (err: Error, results: QueryResult) => {
+  const category = req.query.category;
+  let query = 'SELECT * FROM products';
+  const params = [];
+
+  if (category && category !== 'undefined' && category !== 'all') {
+    query += ' WHERE category = $1';
+    params.push(category);
+  }
+
+  pool?.query(query, params, (err: Error, results: QueryResult) => {
     if (err) {
       console.error('Error executing query: ', err);
       res.status(500).json({
@@ -17,8 +25,7 @@ router.get('/', (req: Request, res: Response) => {
     }
 
     if (isResultEmpty(results.rows)) {
-      console.error('Error: failed to find products');
-      return res.status(500).json({ error: 'Products not found' });
+      console.log(`No products found with query: ${query}`);
     }
 
     res.status(200).json(results.rows);
@@ -37,8 +44,7 @@ router.get('/featured', (req: Request, res: Response) => {
     }
 
     if (isResultEmpty(results.rows)) {
-      console.error('Error: failed to find featured products');
-      return res.status(500).json({ error: 'Featured products not found' });
+      console.log('No featured products found');
     }
 
     res.status(200).json(results.rows);
