@@ -7,7 +7,7 @@ import { UserType } from '../Types/expressTypes';
 import { pool } from '../server';
 import { QueryResult } from 'pg';
 
-interface cOptions {
+interface CookieOptions {
   expires: Date;
   httpOnly: boolean;
   secure: boolean;
@@ -118,11 +118,14 @@ router.post('/login', async (req: Request, res: Response) => {
         expiresIn: process.env.JWT_EXPIRES_IN
       });
 
-      const cookieOptions: cOptions = {
+      const cookieOptions: CookieOptions = {
         expires: new Date(Date.now() + cookieExpireTime * 24 * 60 * 60 * 1000),
         httpOnly: true,
         secure: true,
         sameSite: 'none'
+        //****TODO:enable below when frontend hosted on Netlify****
+        // secure: process.env.ENV_STAGE == 'local' ? false : true,
+        // sameSite: process.env.ENV_STAGE == 'local' ? 'none' : 'strict'
       };
       res.cookie('jwt', token, cookieOptions);
       return res.status(200).json({
@@ -153,6 +156,9 @@ router.get('/logout', (req: Request, res: Response) => {
       httpOnly: true,
       secure: true,
       sameSite: 'none'
+      //****TODO:enable below when frontend hosted on Netlify****
+      // secure: process.env.ENV_STAGE == 'local' ? false : true,
+      // sameSite: process.env.ENV_STAGE == 'local' ? 'none' : 'strict'
     });
 
     return res.status(200).json({ message: 'User logged out' });

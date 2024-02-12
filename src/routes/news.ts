@@ -41,7 +41,7 @@ router.get('/latest', (req: Request, res: Response) => {
       console.error('Error: failed to find news');
       return res.status(404).json({ error: 'Latest news not found' });
     }
-    //add error if array !==3??
+
     res.status(200).json(results.rows);
   });
 });
@@ -70,7 +70,7 @@ router.get('/byId', (req, res) => {
       });
     }
 
-    res.status(200).json(results.rows);
+    res.status(200).json(results.rows[0]);
   });
 });
 

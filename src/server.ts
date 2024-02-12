@@ -13,7 +13,7 @@ import { Pool } from 'pg';
 config();
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: process.env.ENV_STAGE == 'local' ? 'http://localhost:5173' : '*',
   credentials: true
 };
 
