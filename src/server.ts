@@ -13,7 +13,8 @@ import { Pool } from 'pg';
 config();
 
 const corsOptions = {
-  origin: process.env.ENV_STAGE == 'local' ? 'http://localhost:5173' : '*',
+  origin:
+    process.env.ENV_STAGE == 'local' ? 'http://localhost:5173' : 'https://sad-bois.netlify.app',
   credentials: true
 };
 
