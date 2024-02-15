@@ -11,7 +11,6 @@ const router = express.Router();
 router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) => {
   const cardDetails = req.body.formValues;
   const customer = req.body.customer;
-  console.log('customer', customer);
   const cart = req.body.cart;
   const shippingData = req.body.selectedShipping;
 
@@ -60,7 +59,6 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   }
 
   if (!isExistingCustomer) {
-    console.log('running query');
     pool?.query(
       customerQuery,
       [
@@ -104,8 +102,6 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
   };
 
   const customerOrder = createOrder(orderData, orderTotal);
-  console.log('orderTotal with shipping', orderTotal);
-  console.log('customerOrder', customerOrder);
   const {
     orderId,
     customerEmail,

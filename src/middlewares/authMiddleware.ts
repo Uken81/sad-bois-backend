@@ -34,7 +34,6 @@ export const validateToken = async (req: Request, res: Response, next: NextFunct
 
   try {
     const decoded = await verifyToken(req.cookies.jwt, jwtSecret);
-    console.log('decoded', decoded);
 
     const query = 'SELECT * FROM users WHERE email = $1';
     pool?.query(query, [decoded.email], async (err: Error | null, results: QueryResult) => {
