@@ -7,13 +7,15 @@ const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const category = req.query.category;
-  let query = 'SELECT * FROM products ORDER BY id ASC;';
+  let query = 'SELECT * FROM products';
   const params = [];
 
   if (category && category !== 'undefined' && category !== 'all') {
     query += ' WHERE category = $1';
     params.push(category);
   }
+
+  query += ' ORDER BY id ASC;';
 
   pool?.query(query, params, (err: Error, results: QueryResult) => {
     if (err) {
