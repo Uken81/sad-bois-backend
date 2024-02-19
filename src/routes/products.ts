@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
   const category = req.query.category;
-  let query = 'SELECT * FROM products ORDER BY id DESC;';
+  let query = 'SELECT * FROM products ORDER BY id ASC;';
   const params = [];
 
   if (category && category !== 'undefined' && category !== 'all') {
