@@ -121,8 +121,8 @@ router.post('/login', async (req: Request, res: Response) => {
       const cookieOptions: CookieOptions = {
         expires: new Date(Date.now() + cookieExpireTime * 24 * 60 * 60 * 1000),
         httpOnly: true,
-        secure: process.env.ENV_STAGE == 'local' ? false : true,
-        sameSite: process.env.ENV_STAGE == 'local' ? 'none' : 'strict'
+        secure: process.env.ENV_STAGE == 'production' ? true : false,
+        sameSite: process.env.ENV_STAGE == 'production' ? 'strict' : 'lax'
       };
       res.cookie('jwt', token, cookieOptions);
       return res.status(200).json({
@@ -151,8 +151,8 @@ router.get('/logout', (req: Request, res: Response) => {
     res.cookie('jwt', 'logout', {
       expires: new Date(Date.now() + 2 * 1000),
       httpOnly: true,
-      secure: process.env.ENV_STAGE == 'local' ? false : true,
-      sameSite: process.env.ENV_STAGE == 'local' ? 'none' : 'strict'
+      secure: process.env.ENV_STAGE == 'production' ? true : false,
+      sameSite: process.env.ENV_STAGE == 'production' ? 'strict' : 'lax'
     });
 
     return res.status(200).json({ message: 'User logged out' });

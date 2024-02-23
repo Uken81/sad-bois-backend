@@ -19,7 +19,7 @@ router.get('/', (req: Request, res: Response) => {
 
     if (isResultEmpty(results.rows)) {
       console.log('Current user has no product orders');
-      return res.status(200).json({ message: 'User has not made any orders yet.' });
+      return res.status(200).json([]);
     }
 
     res.status(200).json(results.rows);
