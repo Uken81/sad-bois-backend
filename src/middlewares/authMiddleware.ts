@@ -10,29 +10,34 @@ interface DecodedToken {
 }
 
 export const validateToken = async (req: Request, res: Response, next: NextFunction) => {
-  const jwtSecret = process.env.JWT_SECRET;
-  if (!jwtSecret) {
-    throw new Error('JWT_SECRET is not correctly set in the environment variables');
-  }
-
-  const verifyToken = (token: string, secret: jwt.Secret): Promise<DecodedToken> => {
-    return new Promise((resolve, reject) => {
-      jwt.verify(token, secret, (err: Error | null, decoded: any) => {
-        if (err) {
-          console.error('Error verifying token', err);
-          reject(new Error(err.message));
-        }
-
-        if (!decoded) {
-          reject(new Error('Token is null or not decoded properly'));
-        }
-
-        resolve(decoded as DecodedToken);
-      });
-    });
-  };
-
   try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET is not correctly set in the environment variables');
+      return res.status(500).json({
+        message: 'Internal server error. Please try again later.',
+        type: 'configuration_error'
+      });
+    }
+
+    const verifyToken = (token: string, secret: jwt.Secret): Promise<DecodedToken> => {
+      return new Promise((resolve, reject) => {
+        jwt.verify(token, secret, (err: Error | null, decoded: unknown) => {
+          if (err) {
+            console.error('Error verifying token', err);
+            reject(new Error(err.message));
+          }
+
+          if (!decoded) {
+            console.error('Error decoding token');
+            reject(new Error('Token is null or not decoded properly'));
+          }
+
+          resolve(decoded as DecodedToken);
+        });
+      });
+    };
+
     const decoded = await verifyToken(req.cookies.jwt, jwtSecret);
 
     const query = 'SELECT * FROM users WHERE email = $1';
@@ -43,13 +48,13 @@ export const validateToken = async (req: Request, res: Response, next: NextFunct
         return;
       }
 
-      if (!results || results.rows.length === 0) {
+      if (!results || !results.rows.length) {
         console.error('No user found');
-        return res.status(404).json('No user with that ID found');
+        return res.status(404).json({ message: 'No user with that ID found' });
       }
-
       if (results.rows.length > 1) {
-        return res.status(500).json('Multiple users with same id found');
+        console.error('Multiple users with same id found');
+        return res.status(500).json({ message: 'Multiple users with same id found' });
       }
 
       req.isUserValidated = true;
@@ -57,6 +62,6 @@ export const validateToken = async (req: Request, res: Response, next: NextFunct
     });
   } catch (error) {
     console.error('error', error);
-    return res.status(401).json({ message: 'Invalid token' });
+    return res.status(401).json({ message: `Unexpected error validating token: ${error}` });
   }
 };

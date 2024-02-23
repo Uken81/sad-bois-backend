@@ -134,16 +134,23 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 
 router.get('/validate', validateToken, async (req: Request, res: Response) => {
-  const isValidated = req.isUserValidated;
+  try {
+    const isValidated = req.isUserValidated;
+    if (!isValidated) {
+      return res.status(401).json({ validationSuccess: false, message: 'Not authorized' });
+    }
 
-  if (!isValidated) {
-    return res.status(401).json({ validationSuccess: false, message: 'Not authorized' });
+    return res.status(200).json({
+      validationSuccess: true,
+      message: 'Successfully validated user.'
+    });
+  } catch (error) {
+    console.error('Unexpected error during validation:', error);
+    return res.status(500).json({
+      validationSuccess: false,
+      message: 'Internal Server Error. Please try again later.'
+    });
   }
-
-  return res.status(200).json({
-    validationSuccess: true,
-    message: 'Successfully validated user.'
-  });
 });
 
 router.get('/logout', (req: Request, res: Response) => {

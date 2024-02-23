@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import { isResultEmpty } from '../Utils/isResultEmpty';
 import { pool } from '../server';
 import { QueryResult } from 'pg';
 
@@ -15,11 +14,6 @@ router.get('/', (req: Request, res: Response) => {
         error: 'Database error occured',
         details: err.message
       });
-    }
-
-    if (isResultEmpty(results.rows)) {
-      console.log('Current user has no product orders');
-      return res.status(200).json([]);
     }
 
     res.status(200).json(results.rows);
