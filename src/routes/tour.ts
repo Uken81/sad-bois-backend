@@ -34,7 +34,7 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/latest', (req: Request, res: Response) => {
   try {
-    const query = 'SELECT * FROM tou ORDER BY date DESC LIMIT 4;';
+    const query = 'SELECT * FROM tour ORDER BY date DESC LIMIT 4;';
     pool?.query(query, (err: Error, results: QueryResult) => {
       if (err) {
         console.error('Error querying the database:', err);

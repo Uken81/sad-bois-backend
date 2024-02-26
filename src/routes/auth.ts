@@ -94,6 +94,16 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     const { email, password } = req.body;
+    if (!email) {
+      res.status(400).json({
+        message: 'Missing required query parameter: email'
+      });
+    }
+    if (!password) {
+      res.status(400).json({
+        message: 'Missing required query parameter: password'
+      });
+    }
 
     const query = 'SELECT username, email, password FROM users WHERE email = $1';
     pool?.query(query, [email], async (err: Error | null, results: QueryResult) => {

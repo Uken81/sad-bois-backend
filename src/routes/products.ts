@@ -80,7 +80,7 @@ router.get('/byId', (req: Request, res: Response) => {
 
       if (isResultEmpty(results)) {
         console.error(`failed to find product with ID of ${id}`);
-        return res.status(500).json({ error: 'No product with that id found' });
+        return res.status(500).json({ message: 'No product with that id found' });
       }
 
       res.status(200).json(results.rows[0]);
