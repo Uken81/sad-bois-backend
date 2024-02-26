@@ -40,7 +40,7 @@ router.get('/latest', (req: Request, res: Response) => {
       res.status(200).json(results.rows);
     });
   } catch (error) {
-    console.error('Unexpected error fetching news: ', error);
+    console.error('Unexpected error fetching latest news: ', error);
     return res.status(500).json({
       message: 'Internal Server Error. Please try again later.'
     });
@@ -74,7 +74,7 @@ router.get('/byId', (req, res) => {
       res.status(200).json(results.rows[0]);
     });
   } catch (error) {
-    console.error('Unexpected error fetching news: ', error);
+    console.error('Unexpected error fetching news article: ', error);
     return res.status(500).json({
       message: 'Internal Server Error. Please try again later.'
     });

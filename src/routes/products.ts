@@ -6,72 +6,91 @@ import { QueryResult } from 'pg';
 const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
-  const category = req.query.category;
-  let query = 'SELECT * FROM products';
-  const params = [];
+  try {
+    const category = req.query.category;
+    const categorySelected = category && category !== 'undefined' && category !== 'all';
+    let query = 'SELECT * FROM products';
 
-  if (category && category !== 'undefined' && category !== 'all') {
-    query += ' WHERE category = $1';
-    params.push(category);
+    const params = [];
+    if (categorySelected) {
+      query += ' WHERE category = $1';
+      params.push(category);
+    }
+
+    query += ' ORDER BY id ASC;';
+
+    pool?.query(query, params, (err: Error, results: QueryResult) => {
+      if (err) {
+        console.error('Error querying the database:', err);
+        return res.status(500).json({
+          message: 'Server error'
+        });
+      }
+
+      if (isResultEmpty(results)) {
+        console.log(`No products found with query: ${query}`);
+      }
+
+      res.status(200).json(results.rows);
+    });
+  } catch (error) {
+    console.error('Unexpected error fetching products: ', error);
+    return res.status(500).json({
+      message: 'Internal Server Error. Please try again later.'
+    });
   }
-
-  query += ' ORDER BY id ASC;';
-
-  pool?.query(query, params, (err: Error, results: QueryResult) => {
-    if (err) {
-      console.error('Error executing query: ', err);
-      res.status(500).json({
-        error: 'Database error occured',
-        details: err.message
-      });
-    }
-
-    if (isResultEmpty(results)) {
-      console.log(`No products found with query: ${query}`);
-    }
-
-    res.status(200).json(results.rows);
-  });
 });
 
 router.get('/featured', (req: Request, res: Response) => {
-  const query = 'SELECT * FROM products WHERE is_Featured = true';
-  pool?.query(query, (err: Error, results: QueryResult) => {
-    if (err) {
-      console.error('Error executing query: ', err);
-      res.status(500).json({
-        error: 'Database error occured',
-        details: err.message
-      });
-    }
+  try {
+    const query = 'SELECT * FROM products WHERE is_Featured = true';
+    pool?.query(query, (err: Error, results: QueryResult) => {
+      if (err) {
+        console.error('Error querying the database:', err);
+        return res.status(500).json({
+          message: 'Server error'
+        });
+      }
 
-    if (isResultEmpty(results)) {
-      console.log('No featured products found');
-    }
+      if (isResultEmpty(results)) {
+        console.log('No featured products found');
+      }
 
-    res.status(200).json(results.rows);
-  });
+      res.status(200).json(results.rows);
+    });
+  } catch (error) {
+    console.error('Unexpected error fetching featured products: ', error);
+    return res.status(500).json({
+      message: 'Internal Server Error. Please try again later.'
+    });
+  }
 });
 
 router.get('/byId', (req: Request, res: Response) => {
-  const id = req.query.id;
-  const query = 'SELECT * FROM products WHERE id = $1 LIMIT 1';
-  pool?.query(query, [id], (err: Error | null, results: QueryResult) => {
-    if (err) {
-      console.error('Error executing query: ', err);
-      res.status(500).json({
-        error: 'Database error occured',
-        details: err.message
-      });
-    }
+  try {
+    const id = req.query.id;
+    const query = 'SELECT * FROM products WHERE id = $1 LIMIT 1';
+    pool?.query(query, [id], (err: Error | null, results: QueryResult) => {
+      if (err) {
+        console.error('Error querying the database:', err);
+        return res.status(500).json({
+          message: 'Server error'
+        });
+      }
 
-    if (isResultEmpty(results)) {
-      console.error('Error: failed to find selected product');
-      return res.status(500).json({ error: 'No product with that id found' });
-    }
+      if (isResultEmpty(results)) {
+        console.error(`failed to find product with ID of ${id}`);
+        return res.status(500).json({ error: 'No product with that id found' });
+      }
 
-    res.status(200).json(results.rows[0]);
-  });
+      res.status(200).json(results.rows[0]);
+    });
+  } catch (error) {
+    console.error('Unexpected error fetching product', error);
+    return res.status(500).json({
+      message: 'Internal Server Error. Please try again later.'
+    });
+  }
 });
 
 export default router;
