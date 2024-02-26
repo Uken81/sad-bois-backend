@@ -1,14 +1,10 @@
-import { QueryResultRow } from 'pg';
+import { QueryResult } from 'pg';
 
-export const isResultEmpty = (results: QueryResultRow) => {
-  if (!results) {
-    console.error('Can not determine length of empty results.');
+export const isResultEmpty = (results: QueryResult) => {
+  if (!results.rows) {
+    console.error('Can not determine length of null or undefined rows.');
     return;
   }
 
-  if (results.length === 0) {
-    return true;
-  }
-
-  return false;
+  return results.rows.length === 0;
 };

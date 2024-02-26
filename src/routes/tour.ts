@@ -16,7 +16,7 @@ router.get('/', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results.rows)) {
+    if (isResultEmpty(results)) {
       return res.status(404).json({
         error: 'No shows found'
       });

@@ -26,7 +26,7 @@ router.get('/', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results.rows)) {
+    if (isResultEmpty(results)) {
       console.log(`No products found with query: ${query}`);
     }
 
@@ -45,7 +45,7 @@ router.get('/featured', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results.rows)) {
+    if (isResultEmpty(results)) {
       console.log('No featured products found');
     }
 
@@ -65,7 +65,7 @@ router.get('/byId', (req: Request, res: Response) => {
       });
     }
 
-    if (isResultEmpty(results.rows)) {
+    if (isResultEmpty(results)) {
       console.error('Error: failed to find selected product');
       return res.status(500).json({ error: 'No product with that id found' });
     }
