@@ -1,6 +1,6 @@
 export interface CustomerType {
   email: string;
-  emailoffers: boolean;
+  emailOffers: boolean;
   firstName: string;
   lastName: string;
   country: string;

@@ -3,39 +3,45 @@ import { pool } from '../server';
 import { QueryResult, QueryResultRow } from 'pg';
 
 export const calculateOrderTotal = async (data: TotalCalculationDataType) => {
-  const { items } = data.cart;
-  const { shippingPrice } = data.shippingData;
+  try {
+    const { items } = data.cart;
+    const { shippingPrice } = data.shippingData;
 
-  let itemSubtotal = 0;
-  for (const item of items) {
-    const id = item.productId;
-    const quantity = item.quantity;
-    const query = 'SELECT * FROM products WHERE id = $1';
-
-    try {
-      const [productOrder]: QueryResultRow[] = await new Promise((resolve, reject) => {
-        pool?.query(query, [id], (err: Error | null, results: QueryResult) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(results.rows);
-          }
-        });
+    const productIds = items.map((item) => item.productId);
+    const query = 'SELECT * FROM products WHERE id = ANY($1::int[])';
+    const productsData: QueryResultRow[] = await new Promise((resolve, reject) => {
+      pool?.query(query, [productIds], (err: Error, results: QueryResult) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results.rows);
+        }
       });
+    });
 
-      if (!productOrder) {
-        throw new Error('Product order not found');
+    if (!productsData) {
+      throw new Error('Error querying the database for product ids');
+    }
+
+    const itemsSubtotal = items.reduce((acc, item) => {
+      const product = productsData.find((prod) => prod.id == item.productId);
+      if (!product) {
+        throw new Error(`Could not find matching product for id of ${item.productId}`);
       }
 
-      const itemPrice: number = productOrder.price;
-      console.log('itemPrice: ', itemPrice);
-      itemSubtotal += itemPrice * quantity;
-    } catch (error) {
-      throw new Error(`Error calculating order total:  ${error}`);
-    }
-  }
+      const price = Number(product?.price);
+      return acc + price * item.quantity;
+    }, 0);
 
-  const orderTotal = itemSubtotal + shippingPrice;
-  const formattedTotal = orderTotal.toFixed(2);
-  return formattedTotal;
+    if (!itemsSubtotal || isNaN(itemsSubtotal)) {
+      throw new Error('Subtotal calculation result is undefined or not a number type');
+    }
+
+    const orderTotal = itemsSubtotal + shippingPrice;
+    const formattedTotal = orderTotal.toFixed(2);
+
+    return formattedTotal;
+  } catch (error) {
+    throw new Error(`Error calculating order total: ${error}`);
+  }
 };

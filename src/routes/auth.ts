@@ -80,7 +80,7 @@ router.post('/login', async (req: Request, res: Response) => {
     if (!jwtSecret) {
       console.error('JWT_SECRET is not correctly set in the environment variables');
       return res.status(500).json({
-        message: 'Database error occured',
+        message: 'Server error',
         type: 'network'
       });
     }
@@ -88,20 +88,22 @@ router.post('/login', async (req: Request, res: Response) => {
     if (isNaN(cookieExpireTime)) {
       console.error('JWT_COOKIE_EXPIRES is not set correctly in the environment variables');
       return res.status(500).json({
-        message: 'Database error occured',
+        message: 'Server error',
         type: 'network'
       });
     }
 
     const { email, password } = req.body;
     if (!email) {
+      console.error('Missing required query parameter: email');
       res.status(400).json({
-        message: 'Missing required query parameter: email'
+        message: 'Server Error'
       });
     }
     if (!password) {
+      console.error('Missing required query parameter: password');
       res.status(400).json({
-        message: 'Missing required query parameter: password'
+        message: 'Server Error'
       });
     }
 
@@ -117,7 +119,6 @@ router.post('/login', async (req: Request, res: Response) => {
       }
 
       const row = results.rows[0];
-      console.log('use', results.rows[0]);
       const user: UserType = {
         email: row.email,
         username: row.username,
