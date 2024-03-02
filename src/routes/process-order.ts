@@ -47,8 +47,6 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
       postcode
     } = customer;
 
-    const customerInsertionQuery =
-      'INSERT INTO customers (email, email_offers, country, first_name, last_name, address, apartment, suburb, state, postcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
     const isExistingCustomer: boolean | undefined = req.isExistingCustomer;
     if (isExistingCustomer === undefined) {
       console.error(`isExistingCustomer is undefined for ${email}`);
@@ -59,6 +57,8 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
     }
 
     if (!isExistingCustomer) {
+      const customerInsertionQuery =
+        'INSERT INTO customers (email, email_offers, country, first_name, last_name, address, apartment, suburb, state, postcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
       pool?.query(
         customerInsertionQuery,
         [
