@@ -1,4 +1,4 @@
-import { OrderDataType, OrderType } from '../Types/checkoutTypes';
+import { OrderDataType, OrderType } from '../../Types/checkoutTypes';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createOrder = (orderData: OrderDataType, orderTotal: string): OrderType => {

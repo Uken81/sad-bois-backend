@@ -1,5 +1,5 @@
-import { TotalCalculationDataType } from '../Types/checkoutTypes';
-import { pool } from '../server';
+import { TotalCalculationDataType } from '../../Types/checkoutTypes';
+import { pool } from '../../server';
 import { QueryResult, QueryResultRow } from 'pg';
 
 export const calculateOrderTotal = async (data: TotalCalculationDataType) => {

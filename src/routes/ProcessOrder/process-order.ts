@@ -1,16 +1,19 @@
 import express, { Request, Response } from 'express';
-import { CardDetailsType, validateCardDetails } from '../Utils/CardValidation/validateCardDetails';
-import { calculateOrderTotal } from '../Utils/calculateOrderTotal';
+import {
+  CardDetailsType,
+  validateCardDetails
+} from '../../Utils/CardValidation/validateCardDetails';
+import { calculateOrderTotal } from './calculateOrderTotal';
 import {
   CartType,
   CustomerType,
   OrderDataType,
   ShippingType,
   TotalCalculationDataType
-} from '../Types/checkoutTypes';
-import { createOrder } from '../Utils/createOrder';
-import { checkIfExistingCustomer } from '../middlewares/checkIfExistingCustomer';
-import { pool } from '../server';
+} from '../../Types/checkoutTypes';
+import { createOrder } from './createOrder';
+import { checkIfExistingCustomer } from '../../middlewares/checkIfExistingCustomer';
+import { pool } from '../../server';
 
 const router = express.Router();
 
