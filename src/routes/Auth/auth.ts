@@ -6,7 +6,8 @@ import { isResultEmpty } from '../../Utils/isResultEmpty';
 import { UserType } from '../../Types/expressTypes';
 import { pool } from '../../server';
 import { QueryResult } from 'pg';
-import { checkIfRegistered } from './checkIfRegistered';
+import { checkIfRegistered } from '../../Utils/checkIfRegistered';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CookieOptions {
   expires: Date;
@@ -41,8 +42,9 @@ router.post('/register', async (req: Request, res: Response) => {
     }
 
     const passwordHashed = await bcrypt.hash(password, 10);
-    const query = 'INSERT INTO users (email, username, password) VALUES ($1, $2, $3)';
-    pool?.query(query, [email, username, passwordHashed], (err: Error | null) => {
+    const newUserId = uuidv4();
+    const query = 'INSERT INTO users (id, email, username, password) VALUES ($1, $2, $3, $4)';
+    pool?.query(query, [newUserId, email, username, passwordHashed], (err: Error | null) => {
       if (err) {
         console.error('Error querying the database:', err);
         return res.status(500).json({

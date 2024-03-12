@@ -1,5 +1,5 @@
 import { QueryResult } from 'pg';
-import { pool } from '../../server';
+import { pool } from '../server';
 
 export const checkIfRegistered = (email: string): Promise<boolean> => {
   return new Promise((resolve, reject) => {
