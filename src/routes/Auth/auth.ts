@@ -1,11 +1,12 @@
 import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { validateToken } from '../middlewares/authMiddleware';
-import { isResultEmpty } from '../Utils/isResultEmpty';
-import { UserType } from '../Types/expressTypes';
-import { pool } from '../server';
+import { validateToken } from '../../middlewares/authMiddleware';
+import { isResultEmpty } from '../../Utils/isResultEmpty';
+import { UserType } from '../../Types/expressTypes';
+import { pool } from '../../server';
 import { QueryResult } from 'pg';
+import { checkIfRegistered } from './checkIfRegistered';
 
 interface CookieOptions {
   expires: Date;
@@ -31,8 +32,17 @@ router.post('/register', async (req: Request, res: Response) => {
       });
     }
 
-    const duplicteQuery = 'SELECT email FROM users WHERE email = $1';
-    pool?.query(duplicteQuery, [email], async (err: Error | null, results: QueryResult) => {
+    const isAlreadyRegistered = await checkIfRegistered(email);
+    if (isAlreadyRegistered) {
+      return res.status(400).json({
+        message: 'Email already registered',
+        type: 'existing_email'
+      });
+    }
+
+    const passwordHashed = await bcrypt.hash(password, 10);
+    const query = 'INSERT INTO users (email, username, password) VALUES ($1, $2, $3)';
+    pool?.query(query, [email, username, passwordHashed], (err: Error | null) => {
       if (err) {
         console.error('Error querying the database:', err);
         return res.status(500).json({
@@ -42,27 +52,7 @@ router.post('/register', async (req: Request, res: Response) => {
         });
       }
 
-      if (results.rows.length > 0) {
-        return res.status(400).json({
-          message: 'Email already registered',
-          type: 'existing_email'
-        });
-      }
-
-      const passwordHashed = await bcrypt.hash(password, 10);
-      const query = 'INSERT INTO users (email, username, password) VALUES ($1, $2, $3)';
-      pool?.query(query, [email, username, passwordHashed], (err: Error | null) => {
-        if (err) {
-          console.error('Error querying the database:', err);
-          return res.status(500).json({
-            error: 'Database error occured',
-            type: 'network',
-            details: err.message
-          });
-        }
-
-        return res.status(200).json({ message: 'Data inserted successfully' });
-      });
+      return res.status(200).json({ message: 'Data inserted successfully' });
     });
   } catch (error) {
     console.error('Unexpected error during registration:', error);

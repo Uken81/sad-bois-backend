@@ -1,7 +1,7 @@
-import { OrderType } from '../../Types/checkoutTypes';
-import { pool } from '../../server';
+import { OrderType } from '../../../Types/checkoutTypes';
+import { pool } from '../../../server';
 
-export const insertOrder = (customerOrder: OrderType) => {
+export const insertOrder = async (customerOrder: OrderType) => {
   const {
     orderId,
     customerEmail,

@@ -2,7 +2,7 @@ import express, { json, urlencoded } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { config } from 'dotenv';
-import authRouter from './routes/auth';
+import authRouter from './routes/Auth/auth';
 import productsRouter from './routes/products';
 import newsRouter from './routes/news';
 import tourRouter from './routes/tour';

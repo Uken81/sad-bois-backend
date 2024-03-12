@@ -3,13 +3,13 @@ import {
   CardDetailsType,
   validateCardDetails
 } from '../../Utils/CardValidation/validateCardDetails';
-import { calculateOrderTotal } from './calculateOrderTotal';
+import { calculateOrderTotal } from './Utils/calculateOrderTotal';
 import { CartType, CustomerType, OrderDataType, ShippingType } from '../../Types/checkoutTypes';
-import { createOrder } from './createOrder';
+import { createOrder } from './Utils/createOrder';
 import { checkIfExistingCustomer } from '../../middlewares/checkIfExistingCustomer';
-import { insertCustomer } from './insertCustomer';
+import { insertCustomer } from './Utils/insertCustomer';
 import { v4 as uuidv4 } from 'uuid';
-import { insertOrder } from './insertOrder';
+import { insertOrder } from './Utils/insertOrder';
 
 const router = express.Router();
 
@@ -41,7 +41,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
     const newCustomerId = !isExistingCustomer ? uuidv4() : null;
     if (!isExistingCustomer) {
       //test errors
-      insertCustomer(customer, newCustomerId);
+      await insertCustomer(customer, newCustomerId);
     }
 
     const orderTotal = await calculateOrderTotal(cart, shippingData);
@@ -54,7 +54,7 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
     const customerOrder = createOrder(orderData, orderTotal);
 
     //test errors
-    insertOrder(customerOrder);
+    await insertOrder(customerOrder);
 
     return res
       .status(200)

@@ -1,5 +1,5 @@
-import { CartType, ShippingType } from '../../Types/checkoutTypes';
-import { pool } from '../../server';
+import { CartType, ShippingType } from '../../../Types/checkoutTypes';
+import { pool } from '../../../server';
 import { QueryResult, QueryResultRow } from 'pg';
 
 export const calculateOrderTotal = async (cart: CartType, shippingData: ShippingType) => {
