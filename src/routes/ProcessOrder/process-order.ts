@@ -4,18 +4,12 @@ import {
   validateCardDetails
 } from '../../Utils/CardValidation/validateCardDetails';
 import { calculateOrderTotal } from './calculateOrderTotal';
-import {
-  CartType,
-  CustomerType,
-  OrderDataType,
-  ShippingType,
-  TotalCalculationDataType
-} from '../../Types/checkoutTypes';
+import { CartType, CustomerType, OrderDataType, ShippingType } from '../../Types/checkoutTypes';
 import { createOrder } from './createOrder';
 import { checkIfExistingCustomer } from '../../middlewares/checkIfExistingCustomer';
-import { pool } from '../../server';
 import { insertCustomer } from './insertCustomer';
 import { v4 as uuidv4 } from 'uuid';
+import { insertOrder } from './insertOrder';
 
 const router = express.Router();
 
@@ -46,59 +40,21 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
 
     const newCustomerId = !isExistingCustomer ? uuidv4() : null;
     if (!isExistingCustomer) {
+      //test errors
       insertCustomer(customer, newCustomerId);
     }
 
-    const totalsCalculationData: TotalCalculationDataType = {
-      cart,
-      shippingData
-    };
-
-    const orderTotal = await calculateOrderTotal(totalsCalculationData);
+    const orderTotal = await calculateOrderTotal(cart, shippingData);
 
     const orderData: OrderDataType = {
       customer,
       cart,
       shippingData
     };
-
     const customerOrder = createOrder(orderData, orderTotal);
-    const {
-      orderId,
-      customerEmail,
-      shippingDetails,
-      orderedProducts,
-      dateOrdered,
-      shippingType,
-      totalCost
-    } = customerOrder;
-    const customerOrderQuery =
-      'INSERT INTO orders (order_id, customer_email, shipping_Details, ordered_products, date_ordered, shipping_type, total_cost) VALUES ($1, $2, $3, $4, $5, $6, $7)';
 
-    pool?.query(
-      customerOrderQuery,
-      [
-        orderId,
-        customerEmail,
-        shippingDetails,
-        orderedProducts,
-        dateOrdered,
-        shippingType,
-        totalCost
-      ],
-      (err: Error | null) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({
-            message: 'Database error occured',
-            type: 'network',
-            details: err.message
-          });
-        }
-
-        console.log(`New order added for ${customerEmail}`);
-      }
-    );
+    //test errors
+    insertOrder(customerOrder);
 
     return res
       .status(200)

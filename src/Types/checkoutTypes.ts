@@ -31,12 +31,9 @@ export interface CartType {
   subtotal: number;
 }
 
-export interface TotalCalculationDataType {
+export interface OrderDataType {
   cart: CartType;
   shippingData: ShippingType;
-}
-
-export interface OrderDataType extends TotalCalculationDataType {
   customer: CustomerType;
 }
 

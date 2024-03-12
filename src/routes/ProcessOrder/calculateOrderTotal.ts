@@ -1,11 +1,11 @@
-import { TotalCalculationDataType } from '../../Types/checkoutTypes';
+import { CartType, ShippingType } from '../../Types/checkoutTypes';
 import { pool } from '../../server';
 import { QueryResult, QueryResultRow } from 'pg';
 
-export const calculateOrderTotal = async (data: TotalCalculationDataType) => {
+export const calculateOrderTotal = async (cart: CartType, shippingData: ShippingType) => {
   try {
-    const { items } = data.cart;
-    const { shippingPrice } = data.shippingData;
+    const { items } = cart;
+    const { shippingPrice } = shippingData;
 
     const productIds = items.map((item) => item.productId);
     const query = 'SELECT * FROM products WHERE id = ANY($1::int[])';
