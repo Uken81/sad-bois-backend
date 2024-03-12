@@ -7,7 +7,7 @@ export const checkIfRegistered = (email: string): Promise<boolean> => {
     pool?.query(duplicteQuery, [email], (err: Error | null, results: QueryResult) => {
       if (err) {
         console.error('Error querying the database:', err);
-        reject(err);
+        reject(new Error(`Error querying the database`));
       } else {
         const isRegistered = results.rows.length > 0;
         resolve(isRegistered);
