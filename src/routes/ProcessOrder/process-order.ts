@@ -14,10 +14,14 @@ import {
 import { createOrder } from './createOrder';
 import { checkIfExistingCustomer } from '../../middlewares/checkIfExistingCustomer';
 import { pool } from '../../server';
+import { insertCustomer } from './insertCustomer';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 
 router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) => {
+  console.log('Cookies: ', req.cookies);
+
   try {
     const cardDetails: CardDetailsType = req.body.formValues;
     const customer: CustomerType = req.body.customer;
@@ -37,57 +41,12 @@ router.post('/', checkIfExistingCustomer, async (req: Request, res: Response) =>
         .json({ type: validationResults.type, message: validationResults.message });
     }
 
-    const {
-      email,
-      emailOffers,
-      country,
-      firstName,
-      lastName,
-      address,
-      apartment,
-      suburb,
-      state,
-      postcode
-    } = customer;
-
     const isExistingCustomer: boolean | undefined = req.isExistingCustomer;
-    if (isExistingCustomer === undefined) {
-      console.error(`isExistingCustomer is undefined for ${email}`);
-      return res.status(500).json({
-        message: 'Server error',
-        type: 'server'
-      });
-    }
+    console.log('isEC', isExistingCustomer);
 
+    const newCustomerId = !isExistingCustomer ? uuidv4() : null;
     if (!isExistingCustomer) {
-      const customerInsertionQuery =
-        'INSERT INTO customers (email, email_offers, country, first_name, last_name, address, apartment, suburb, state, postcode) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
-      pool?.query(
-        customerInsertionQuery,
-        [
-          email,
-          emailOffers,
-          country,
-          firstName,
-          lastName,
-          address,
-          apartment,
-          suburb,
-          state,
-          postcode
-        ],
-        async (err: Error | null) => {
-          if (err) {
-            console.error('Error querying the database:', err);
-            return res.status(500).json({
-              message: 'Server error',
-              type: 'network'
-            });
-          }
-
-          console.log(`New customer ${email} added`);
-        }
-      );
+      insertCustomer(customer, newCustomerId);
     }
 
     const totalsCalculationData: TotalCalculationDataType = {
