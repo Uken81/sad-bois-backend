@@ -98,8 +98,8 @@ router.post('/login', async (req: Request, res: Response) => {
         message: 'Server Error'
       });
     }
-
-    const query = 'SELECT username, email, password FROM users WHERE email = $1';
+    //search from uuid instead??
+    const query = 'SELECT id, username, email, password FROM users WHERE email = $1';
     pool?.query(query, [email], async (err: Error | null, results: QueryResult) => {
       if (err) {
         console.error('Error querying the database:', err);
@@ -112,6 +112,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
       const row = results.rows[0];
       const user: UserType = {
+        id: row.id,
         email: row.email,
         username: row.username,
         password: row.password
@@ -126,7 +127,7 @@ router.post('/login', async (req: Request, res: Response) => {
       }
 
       if (passwordMatch) {
-        const token = jwt.sign({ email: user.email }, jwtSecret, {
+        const token = jwt.sign({ userId: user.id }, jwtSecret, {
           expiresIn: process.env.JWT_EXPIRES_IN
         });
 

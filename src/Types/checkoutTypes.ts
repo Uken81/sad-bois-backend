@@ -34,7 +34,7 @@ export interface CartType {
 export interface OrderDataType {
   cart: CartType;
   shippingData: ShippingType;
-  customer: CustomerType;
+  customerDetails: CustomerType;
 }
 
 export interface CartSummaryTYpe {

@@ -7,8 +7,8 @@ export const validateToken = async (req: Request, res: Response, next: NextFunct
   try {
     const decoded = await verifyToken(req.cookies.jwt);
 
-    const query = 'SELECT * FROM users WHERE email = $1';
-    pool?.query(query, [decoded.email], async (err: Error | null, results: QueryResult) => {
+    const query = 'SELECT * FROM users WHERE id = $1';
+    pool?.query(query, [decoded.userId], async (err: Error | null, results: QueryResult) => {
       if (err) {
         console.error('Error querying the database:', err);
         res.status(500).json({ message: 'Server error', type: 'network' });
