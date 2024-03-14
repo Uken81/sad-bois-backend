@@ -25,45 +25,52 @@ router.post('/', getUserCredentials, async (req: Request, res: Response) => {
     }
 
     console.log('Creds: ', userCredentials);
+    if (userCredentials.id) {
+      console.log('uid', userCredentials.id);
+    }
+
+    const customerDetails: CustomerType = req.body.customer;
+    const cardDetails: CardDetailsType = req.body.formValues;
+    const cart: CartType = req.body.cart;
+    const shippingData: ShippingType = req.body.selectedShipping;
+    if (!cardDetails || !customerDetails || !cart || !shippingData) {
+      console.error(
+        `Missing required query paramater in processing order for ${customerDetails.email}`
+      );
+      return res.status(400).json({ message: 'Form details error' });
+    }
+
+    const validationResults = validateCardDetails(cardDetails);
+    if (!validationResults.success) {
+      console.error(`Could not validate card for ${customerDetails.email}`);
+      return res
+        .status(403)
+        .json({ type: validationResults.type, message: validationResults.message });
+    }
+
     const isExistingCustomer = await checkIfExistingCustomer(userCredentials);
     console.log('IEC: ', isExistingCustomer);
+    const customerId =
+      userCredentials?.isLoggedIn && userCredentials.id ? userCredentials.id : uuidv4();
+    if (!isExistingCustomer) {
+      //test errors
+      await insertCustomer(customerDetails, customerId);
+    }
 
-    // const customerDetails: CustomerType = req.body.customer;
-    //   const cardDetails: CardDetailsType = req.body.formValues;
-    //   const cart: CartType = req.body.cart;
-    //   const shippingData: ShippingType = req.body.selectedShipping;
-    //   if (!cardDetails || !customerDetails || !cart || !shippingData) {
-    //     console.error(
-    //       `Missing required query paramater in processing order for ${customerDetails.email}`
-    //     );
-    //     return res.status(400).json({ message: 'Form details error' });
-    //   }
-    //   const validationResults = validateCardDetails(cardDetails);
-    //   if (!validationResults.success) {
-    //     console.error(`Could not validate card for ${customerDetails.email}`);
-    //     return res
-    //       .status(403)
-    //       .json({ type: validationResults.type, message: validationResults.message });
-    //   }
-    //   // const isExistingCustomer: boolean | undefined = req.isExistingCustomer;
-    //   // console.log('isEC', isExistingCustomer);
-    //   const customerId = userCredentials?.isLoggedIn ? userCredentials.id : uuidv4();
-    //   if (!isExistingCustomer) {
-    //     //test errors
-    //     await insertCustomer(customerDetails, newCustomerId);
-    //   }
-    //   const orderTotal = await calculateOrderTotal(cart, shippingData);
-    //   const orderData: OrderDataType = {
-    //     customerDetails,
-    //     cart,
-    //     shippingData
-    //   };
-    //   const customerOrder = createOrder(orderData, orderTotal);
-    //   //test errors
-    //   await insertOrder(customerOrder);
-    //   return res
-    //     .status(200)
-    //     .json({ message: 'Order processed successfully', orderSummary: customerOrder });
+    const orderTotalCost = await calculateOrderTotal(cart, shippingData);
+    const orderData: OrderDataType = {
+      customerId,
+      customerDetails,
+      cart,
+      shippingData,
+      orderTotalCost
+    };
+    const customerOrder = createOrder(orderData);
+    //test errors
+    await insertOrder(customerOrder);
+    return res
+      .status(200)
+      .json({ message: 'Order processed successfully', orderSummary: customerOrder });
   } catch (error) {
     console.error('Unexpected error processing orders', error);
     return res.status(500).json({

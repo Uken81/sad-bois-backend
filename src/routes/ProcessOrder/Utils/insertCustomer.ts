@@ -1,7 +1,8 @@
 import { CustomerType } from '../../../Types/checkoutTypes';
 import { pool } from '../../../server';
 
-export const insertCustomer = async (customer: CustomerType, newCustomerId: string | null) => {
+export const insertCustomer = async (customer: CustomerType, customerId: string | null) => {
+  console.log('CID', customerId);
   const {
     email,
     emailOffers,
@@ -15,9 +16,8 @@ export const insertCustomer = async (customer: CustomerType, newCustomerId: stri
     postcode
   } = customer;
 
-  if (!newCustomerId) {
-    console.log(`Error creating new customer id for ${email}`);
-    throw new Error();
+  if (!customerId) {
+    throw new Error(`Error creating new customer id for ${email}`);
   }
 
   const customerInsertionQuery =
@@ -26,7 +26,7 @@ export const insertCustomer = async (customer: CustomerType, newCustomerId: stri
   pool?.query(
     customerInsertionQuery,
     [
-      newCustomerId,
+      customerId,
       email,
       emailOffers,
       country,
@@ -40,13 +40,7 @@ export const insertCustomer = async (customer: CustomerType, newCustomerId: stri
     ],
     async (err: Error | null) => {
       if (err) {
-        console.error('Error querying the database:', err);
-        //test below
-        throw new Error(`${err}`);
-        // return res.status(500).json({
-        //   message: 'Server error',
-        //   type: 'network'
-        // });
+        throw new Error(`Error querying the database: ${err}`);
       }
 
       console.log(`New customer ${email} added`);

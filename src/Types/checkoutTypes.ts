@@ -1,4 +1,5 @@
 export interface CustomerType {
+  id: string;
   email: string;
   emailOffers: boolean;
   firstName: string;
@@ -32,9 +33,11 @@ export interface CartType {
 }
 
 export interface OrderDataType {
+  customerId: string;
   cart: CartType;
   shippingData: ShippingType;
   customerDetails: CustomerType;
+  orderTotalCost: string;
 }
 
 export interface CartSummaryTYpe {
@@ -45,6 +48,7 @@ export interface CartSummaryTYpe {
 
 export interface OrderType {
   orderId: string;
+  customerId: string;
   customerEmail: string;
   shippingDetails: string;
   orderedProducts: string;
