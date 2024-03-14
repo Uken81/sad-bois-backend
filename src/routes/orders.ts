@@ -1,21 +1,22 @@
 import express, { Request, Response } from 'express';
 import { pool } from '../server';
 import { QueryResult } from 'pg';
+import { getUserCredentials } from '../middlewares/getUserCredentials';
 
 const router = express.Router();
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', getUserCredentials, (req: Request, res: Response) => {
   try {
-    const email = req.query.email;
-    if (!email) {
-      console.error('Missing required query parameter: email');
-      return res.status(400).json({
-        message: 'Server error'
-      });
+    const userCredentials = req.userCredentials;
+    if (!userCredentials) {
+      console.error('userCredentials is null or undefined');
+      return res
+        .status(500)
+        .json({ message: 'Internal server error: user credentials processing failed.' });
     }
 
-    const query = 'SELECT * FROM orders WHERE customer_email = $1 ORDER BY date_ordered DESC';
-    pool?.query(query, [email], (err: Error | null, results: QueryResult) => {
+    const query = 'SELECT * FROM orders WHERE customer_id = $1 ORDER BY date_ordered DESC';
+    pool?.query(query, [userCredentials.id], (err: Error | null, results: QueryResult) => {
       if (err) {
         console.error('Error querying the database:', err);
         return res.status(500).json({
