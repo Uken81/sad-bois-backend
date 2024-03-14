@@ -9,7 +9,6 @@ export interface UserCredentials {
 export const getUserCredentials = async (req: Request, res: Response, next: NextFunction) => {
   const jwtCookie = req.cookies;
   if (!jwtCookie || !jwtCookie.jwt) {
-    console.log('no cookie');
     req.userCredentials = {
       isLoggedIn: false,
       id: null

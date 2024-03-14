@@ -24,6 +24,7 @@ export const verifyToken = async (token: string): Promise<DecodedToken> => {
         console.error('Token is null or not decoded properly');
         reject(new Error('Internal server error'));
       }
+
       resolve(decoded as DecodedToken);
     });
   });

@@ -23,7 +23,6 @@ export const checkIfExistingCustomer = async (
         return reject(new Error('Incorrect value returned from query'));
       }
 
-      console.log('condition met: ', conditionMet);
       resolve(conditionMet);
     });
   });

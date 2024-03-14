@@ -24,11 +24,6 @@ router.post('/', getUserCredentials, async (req: Request, res: Response) => {
         .json({ message: 'Internal server error: user credentials processing failed.' });
     }
 
-    console.log('Creds: ', userCredentials);
-    if (userCredentials.id) {
-      console.log('uid', userCredentials.id);
-    }
-
     const customerDetails: CustomerType = req.body.customer;
     const cardDetails: CardDetailsType = req.body.formValues;
     const cart: CartType = req.body.cart;
@@ -49,11 +44,9 @@ router.post('/', getUserCredentials, async (req: Request, res: Response) => {
     }
 
     const isExistingCustomer = await checkIfExistingCustomer(userCredentials);
-    console.log('IEC: ', isExistingCustomer);
     const customerId =
       userCredentials?.isLoggedIn && userCredentials.id ? userCredentials.id : uuidv4();
     if (!isExistingCustomer) {
-      //test errors
       await insertCustomer(customerDetails, customerId);
     }
 
@@ -66,7 +59,6 @@ router.post('/', getUserCredentials, async (req: Request, res: Response) => {
       orderTotalCost
     };
     const customerOrder = createOrder(orderData);
-    //test errors
     await insertOrder(customerOrder);
     return res
       .status(200)
