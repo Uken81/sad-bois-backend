@@ -20,8 +20,9 @@ export const getUserCredentials = async (req: Request, res: Response, next: Next
 
   try {
     const token = await verifyToken(jwtCookie.jwt);
+    console.log(token, token.userId, typeof token.userId);
     if (typeof token.userId !== 'string' || token.userId === '') {
-      console.log('Invalid token: token is not a string or is an empty string');
+      console.log('Invalid token: user id credential is not a string or is an empty string');
       return res.status(400).json({ message: 'Unauthorized: Invalid token' });
     }
 
