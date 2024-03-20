@@ -9,11 +9,11 @@ router.get('/', (req: Request, res: Response) => {
   try {
     const category = req.query.category;
     const categorySelected = category && category !== 'undefined' && category !== 'all';
-    let query = 'SELECT * FROM products';
+    let query = "SELECT * FROM products WHERE category <> 'concert'";
 
     const params = [];
     if (categorySelected) {
-      query += ' WHERE category = $1';
+      query += 'AND category = $1';
       params.push(category);
     }
 
