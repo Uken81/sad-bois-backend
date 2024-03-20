@@ -56,7 +56,13 @@ router.get('/latest', (req: Request, res: Response) => {
 router.get('/byId', (req: Request, res: Response) => {
   try {
     const id = req.query.id;
-
+    console.log('id', id);
+    if (!id) {
+      console.log('No ID provided.');
+      return res.status(400).json({
+        error: 'No article ID provided'
+      });
+    }
     const query = 'SELECT * FROM tour WHERE id = $1';
     pool.query(query, [id], (err: Error, results: QueryResult) => {
       if (err) {
@@ -67,7 +73,8 @@ router.get('/byId', (req: Request, res: Response) => {
       if (isResultEmpty(results)) {
         return res.status(500).json({ message: 'Error querying the database' });
       }
-
+      console.log('results', results);
+      console.log('row', results.rows[0]);
       res.status(200).json(results.rows[0]);
     });
   } catch (error) {
