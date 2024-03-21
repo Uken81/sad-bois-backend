@@ -56,6 +56,12 @@ router.get('/latest', (req: Request, res: Response) => {
 router.get('/byId', (req: Request, res: Response) => {
   try {
     const id = req.query.id;
+    if (!id) {
+      console.log('No ID provided.');
+      return res.status(400).json({
+        error: 'No article ID provided'
+      });
+    }
 
     const query = 'SELECT * FROM tour WHERE id = $1';
     pool.query(query, [id], (err: Error, results: QueryResult) => {
