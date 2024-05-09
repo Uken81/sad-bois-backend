@@ -23,7 +23,7 @@ router.post('/register', async (req: Request, res: Response) => {
     const { email, username, password, confirmedPassword } = req.body;
     if (!email || !username || !password || !confirmedPassword) {
       console.error('Missing form data in login');
-      return res.status(400).json({ message: 'Missing form data' });
+      return res.status(400).json({ message: 'Internal Server Error. Please try again later.' });
     }
 
     if (password !== confirmedPassword) {
@@ -48,7 +48,7 @@ router.post('/register', async (req: Request, res: Response) => {
       if (err) {
         console.error('Error querying the database:', err);
         return res.status(500).json({
-          error: 'Database error occured',
+          message: 'Internal Server Error. Please try again later.',
           type: 'network',
           details: err.message
         });
@@ -59,7 +59,8 @@ router.post('/register', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Unexpected error during registration:', error);
     return res.status(500).json({
-      message: 'Internal Server Error. Please try again later.'
+      message: 'Internal Server Error. Please try again later.',
+      type: 'network'
     });
   }
 });
@@ -89,16 +90,18 @@ router.post('/login', async (req: Request, res: Response) => {
     if (!email) {
       console.error('Missing required query parameter: email');
       res.status(400).json({
-        message: 'Server Error'
+        message: 'Server Error',
+        type: 'network'
       });
     }
     if (!password) {
       console.error('Missing required query parameter: password');
       res.status(400).json({
-        message: 'Server Error'
+        message: 'Server Error',
+        type: 'network'
       });
     }
-    //search from uuid instead??
+
     const query = 'SELECT id, username, email, password FROM users WHERE email = $1';
     pool?.query(query, [email], async (err: Error | null, results: QueryResult) => {
       if (err) {
@@ -147,7 +150,8 @@ router.post('/login', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Unexpected error during login:', error);
     return res.status(500).json({
-      message: 'Internal Server Error. Please try again later.'
+      message: 'Internal Server Error. Please try again later.',
+      type: 'network'
     });
   }
 });

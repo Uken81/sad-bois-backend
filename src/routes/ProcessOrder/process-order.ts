@@ -66,6 +66,7 @@ router.post('/', getUserCredentials, async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Unexpected error processing orders', error);
     return res.status(500).json({
+      type: 'network',
       message: 'Internal Server Error. Please try again later.'
     });
   }
